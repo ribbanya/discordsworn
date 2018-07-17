@@ -1,5 +1,5 @@
 ﻿const discord = require("discord.js");
-const lokidb = require("@lokidb/loki")
+const fs = require('fs');
 const client = new discord.Client();
 
 //TODO: True RNG
@@ -107,12 +107,18 @@ function rInt(min, max, count = 1) {
 function actionRoll(msg, modifiers) {
     var chan = msg.channel;
     var mods = modifiers.reduce(function (m, s) {
-        return m + parseInt(s);
+        var i = parseInt(s);
+        if (!i) return m;
+        return m + i;
     }, 0);
     var challenge = d(10, 2);
     var action = d(6);
     var challengeStr = challenge.map(n => (action + mods) > n ? `__${n}__` : n);
-    modStr = modifiers.length > 0 ? modifiers.join('+') : '0';
+    modStr = modifiers.length > 0 ? modifiers.reduce((m, s) => {
+        if (parseInt(s))
+            m.push(s);
+        return m;
+    }, []).join('+') : '0';
     var result = ''
         + `**${action + mods}** (**${action}**+${modStr})`
         + ` vs. **${challengeStr[0]}** & **${challengeStr[1]}**`;
@@ -133,7 +139,8 @@ function actionRoll(msg, modifiers) {
 }
 
 function login() {
-    client.login("NDY4MDUxMDkxNjM3MDEwNDQ1.Dizlew.drt6ycuCPEm6bl-3mkA5YNvp6TU");
+    var token = JSON.parse(fs.readFileSync('tokens.json', 'utf8')).discordswornBotAccount;
+    client.login(token);
 }
 
 function reset(channel) {
