@@ -5,6 +5,7 @@ const client = new discord.Client();
 //TODO: True RNG
 const prefix = '.'
 
+const tokens = JSON.parse(fs.readFileSync('tokens.json', 'utf8'))
 login();
 
 client.on("ready", () => {
@@ -29,7 +30,7 @@ client.on("message", (msg) => {
             chan.send(s);
             break;
         case 'shutdown':
-            shutdown(chan);
+            shutdown(msg);
             break;
         case 'reset':
             reset(chan);
@@ -139,8 +140,7 @@ function actionRoll(msg, modifiers) {
 }
 
 function login() {
-    var token = JSON.parse(fs.readFileSync('tokens.json', 'utf8')).discordswornBotAccount;
-    client.login(token);
+    client.login(tokens.discord.botAccount);
 }
 
 function reset(channel) {
@@ -149,7 +149,14 @@ function reset(channel) {
         .then(() => login());
 }
 
-function shutdown(channel) {
-    channel.send("Shutting down.")
-        .then(msg => client.destroy());
+function shutdown(msg) {
+    const a = msg.author;
+    console.info(`Shutdown request received from ${a.id} (${a.username}#${a.discriminator}.)`);
+    if (a.id != tokens.discord.ownerId)
+        return;
+
+    console.log("Shutting down.");
+    msg.channel.send(`Shutting down at the request of ${msg.author}.`)
+        .then(() => client.destroy())
+        .then(() => process.exit(0));
 }
