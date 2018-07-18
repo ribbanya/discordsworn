@@ -1,7 +1,6 @@
 [
     {
         "title": "Action",
-        "type": "simple",
         "results": {
             "1": "Scheme",
             "2": "Clash",
@@ -107,7 +106,6 @@
     },
     {
         "title": "Theme",
-        "type": "simple",
         "results": {
             "1": "Risk",
             "2": "Ability",
@@ -213,7 +211,6 @@
     },
     {
         "title": "Region",
-        "type": "simple",
         "results": {
             "12": "Barrier Islands",
             "24": "Ragged Coast",
@@ -229,7 +226,6 @@
     },
     {
         "title": "Location",
-        "type": "simple",
         "results": {
             "1": "Hideout",
             "2": "Ruin",
@@ -286,7 +282,6 @@
     },
     {
         "title": "Coastal Waters Location",
-        "type": "simple",
         "results": {
             "1": "Fleet",
             "2": "Sargassum",
@@ -309,7 +304,6 @@
     },
     {
         "title": "Location Descriptor",
-        "type": "simple",
         "results": {
             "2": "High",
             "4": "Remote",
@@ -592,7 +586,6 @@
     },
     {
         "title": "Settlement Trouble",
-        "type": "simple",
         "results": {
             "2": "Outsiders rejected",
             "4": "Dangerous discovery",
@@ -644,7 +637,6 @@
     },
     {
         "title": "NPC Role",
-        "type": "simple",
         "results": {
             "2": "Criminal",
             "4": "Healer",
@@ -679,7 +671,6 @@
     },
     {
         "title": "Goal",
-        "type": "simple",
         "results": {
             "3": "Obtain an object",
             "6": "Make an agreement",
@@ -719,6 +710,15 @@
     {
         "title": "NPC Descriptor",
         "results": {
+            "1": "Stoic",
+            "2": "Attractive",
+            "3": "Passive",
+            "4": "Aloof",
+            "5": "Affectionate",
+            "6": "Generous",
+            "7": "Ironsworn",
+            "8": "Armed",
+            "9": "Clever",
             "10": "Brave",
             "11": "Ugly",
             "12": "Sociable",
@@ -809,15 +809,6 @@
             "97": "Cowardly",
             "98": "Obsessed",
             "99": "Careless",
-            "1": "Stoic",
-            "2": "Attractive",
-            "3": "Passive",
-            "4": "Aloof",
-            "5": "Affectionate",
-            "6": "Generous",
-            "7": "Ironsworn",
-            "8": "Armed",
-            "9": "Clever",
             "100": "Smug"
         }
     },
@@ -925,6 +916,7 @@
             "97": "Temir",
             "98": "Bas",
             "99": "Sabine",
+            "100": "Tallus",
             "101": "Segura",
             "102": "Gethin",
             "103": "Bataar",
@@ -1024,8 +1016,7 @@
             "197": "Irsia",
             "198": "Kayu",
             "199": "Bevan",
-            "200": "Chandra",
-            "100": "Tallus"
+            "200": "Chandra"
         }
     },
     {
@@ -1081,6 +1072,219 @@
             "96": "Otani",
             "98": "Ditani",
             "100": "Faraza"
+        }
+    },
+    {
+        "title": "Other Names",
+        "type": "multipleColumns",
+        "results": {
+            "4": [
+                "Chony",
+                "Vata",
+                "Rattle"
+            ],
+            "8": [
+                "Banda",
+                "Zora",
+                "Scratch"
+            ],
+            "12": [
+                "Jochu",
+                "Jasna",
+                "Wallow"
+            ],
+            "16": [
+                "Kira",
+                "Charna",
+                "Groak"
+            ],
+            "20": [
+                "Khatir",
+                "Tana",
+                "Gimble"
+            ],
+            "24": [
+                "Chaidu",
+                "Soveen",
+                "Scar"
+            ],
+            "28": [
+                "Atan",
+                "Radka",
+                "Cratch"
+            ],
+            "32": [
+                "Buandu",
+                "Zlata",
+                "Creech"
+            ],
+            "36": [
+                "Javyn",
+                "Leesla",
+                "Shush"
+            ],
+            "40": [
+                "Khashin",
+                "Byna",
+                "Glush"
+            ],
+            "44": [
+                "Bayara",
+                "Meeka",
+                "Slar"
+            ],
+            "48": [
+                "Temura",
+                "Iskra",
+                "Gnash"
+            ],
+            "52": [
+                "Kidha",
+                "Jarek",
+                "Stoad"
+            ],
+            "56": [
+                "Kathos",
+                "Darva",
+                "Grig"
+            ],
+            "60": [
+                "Tanua",
+                "Neda",
+                "Bleat"
+            ],
+            "64": [
+                "Bashtu",
+                "Keha",
+                "Chortle"
+            ],
+            "68": [
+                "Jaran",
+                "Zhivka",
+                "Cluck"
+            ],
+            "72": [
+                "Othos",
+                "Kvata",
+                "Slith"
+            ],
+            "76": [
+                "Khutan",
+                "Staysa",
+                "Mongo"
+            ],
+            "80": [
+                "Otaan",
+                "Evka",
+                "Creak"
+            ],
+            "84": [
+                "Martu",
+                "Vuksha",
+                "Burble"
+            ],
+            "88": [
+                "Baku",
+                "Muko",
+                "Vrusk"
+            ],
+            "92": [
+                "Tuban",
+                "Dreko",
+                "Snuffle"
+            ],
+            "96": [
+                "Qudan",
+                "Aleko",
+                "Leech"
+            ],
+            "100": [
+                "Denua",
+                "Vojan",
+                "Herk"
+            ]
+        }
+    },
+    {
+        "title": "Combat Action",
+        "results": {
+            "3": "Compel a surrender.",
+            "6": "Coordinate with allies.",
+            "9": "Gather reinforcements.",
+            "13": "Seize something or someone.",
+            "17": "Provoke a reckless response.",
+            "21": "Intimidate or frighten.",
+            "25": "Reveal a surprising truth.",
+            "29": "Shift focus to someone or something else.",
+            "33": "Destroy something, or render it useless.",
+            "39": "Take a decisive action.",
+            "45": "Reinforce defenses.",
+            "52": "Ready an action.",
+            "60": "Use the terrain to gain advantage.",
+            "68": "Leverage the advantage of a weapon or ability.",
+            "78": "Create an opportunity.",
+            "89": "Attack with precision.",
+            "100": "Attack with power."
+        }
+    },
+    {
+        "title": "Mystic Backlash",
+        "results": {
+            "5": "The ritual has the opposite affect.",
+            "10": "You are sapped of strength.",
+            "15": "An ally, companion or friend is adversely affected.",
+            "20": "An important object is destroyed.",
+            "25": "A horror is drawn to you like a moth to a flame.",
+            "30": "You collapse, and drift into a troubled sleep.",
+            "35": "You undergo a physical torment which leaves its mark upon you.",
+            "40": "Ghostly voices whisper of dark portents. Envision what they tell you.",
+            "45": "You are lost in shadow, and find yourself in another placewithout memory of how you got there. Envision your new surroundings.",
+            "50": "You alert someone or something to your presence.",
+            "55": "You are not yourself, and act against a friend, ally or companion. Envision what you do and how they respond.",
+            "60": "You affect or damage your surroundings, causing a disturbance or potential harm.",
+            "65": "Supply is wasted.",
+            "70": "Creatures exhibit strange or aggressive behavior.",
+            "75": "You lose your connection to magic for a day or so, and cannot perform rituals.",
+            "80": "The ritual affects the target in an unexpected and problematic way.",
+            "85": "The ritual reveals a surprising and troubling truth.",
+            "90": "You are tempted by dark powers. Envision what you are shown.",
+            "95": "A horrifying vision manifests. Envision what you see.",
+            "100": "Roll twice more on this table. Both results occur. If they are the same result, make it worse."
+        }
+    },
+    {
+        "title": "Major Plot Twist",
+        "results": {
+            "5": "It was all a diversion.",
+            "10": "A dark secret is revealed.",
+            "15": "A trap is sprung.",
+            "20": "An assumption is revealed to be false.",
+            "25": "A secret alliance is revealed.",
+            "30": "Your actions benefit an enemy.",
+            "35": "Someone returns unexpectedly.",
+            "40": "A more dangerous foe is revealed.",
+            "45": "You and an enemy share a common goal.",
+            "50": "A true identity is revealed.",
+            "55": "You are betrayed by someone who was trusted.",
+            "60": "You are too late.",
+            "65": "The true enemy is revealed.",
+            "70": "The enemy gains new allies.",
+            "75": "A new danger appears.",
+            "80": "Someone or something goes missing.",
+            "85": "The truth of a relationship is revealed.",
+            "90": "Two seemingly unrelated situations are shown to be connected.",
+            "95": "Unexpected powers or abilities are revealed.",
+            "100": "Roll twice."
+        }
+    },
+    {
+        "title": "Challenge Rank",
+        "results": {
+            "20": "Troublesome",
+            "55": "Dangerous",
+            "80": "Formidable",
+            "93": "Extreme",
+            "100": "Epic"
         }
     }
 ]
