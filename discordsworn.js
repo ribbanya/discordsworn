@@ -1,12 +1,40 @@
 ﻿const discord = require("discord.js");
 const fs = require('fs');
+const assert = require('assert');
 const client = new discord.Client();
 
 //TODO: True RNG
 const prefix = '.'
 
-const tokens = JSON.parse(fs.readFileSync('tokens.json', 'utf8'))
+const tokens = syncParseJSON('tokens.json');
+const oracles = syncParseJSON('oracles.json'); {
+    oracles.map = {};
+    for (let i = 0; i < oracles.length; i++) {
+        let oracle = oracles[i];
+
+        if (oracle.type) {
+            console.info(`${oracle.title}: ${oracle.type}`)
+            continue; //TODO
+        }
+        if (!oracle.title) {
+            console.warn(`Oracle at index ${i} is missing a title field.`);
+            continue;
+        }
+        oracles.map[formatAlias(oracle.title)] = oracle;
+
+        if (!oracle.aliases) continue;
+
+        for (let i = 0; i < oracle.aliases.length; i++) {
+            oracles.map[formatAlias(oracle.aliases[i])] = oracle;
+        }
+    }
+}
 login();
+
+
+function formatAlias(s) {
+    return s.toLowerCase().replace(/\s/, '-');
+}
 
 client.on("ready", () => {
     console.log("Ready.");
@@ -64,12 +92,16 @@ function askTheOracle(msg, args) {
         10: 'highly unlikely'
     }
     const invalidArgsMsg =
-        msg.author
-        + ' A likelihood is required. Please use a whole number between '
-        + '0-100 or one of the following:\n'
-        + Object.keys(tierMap).map(s => '`' + s + '`').join(', ');
+        msg.author +
+        ' A likelihood is required. Please use a whole number between ' +
+        '0-100 or one of the following:\n' +
+        Object.keys(tierMap).map(s => '`' + s + '`').join(', ');
     if (args.length < 1) {
         chan.send(invalidArgsMsg)
+        return;
+    }
+    if (args[0] == "table" | args[0] == "t") {
+        askTable(msg, args.slice(1));
         return;
     }
     var likelihood = args[0].toLowerCase();
@@ -91,9 +123,30 @@ function askTheOracle(msg, args) {
     if (question != null) {
         resultMsg += '"' + question + '"\n';
     }
-    resultMsg += msg.author + ' '
-        + (result <= odds ? '**Yes**.' : '**No**.');
+    resultMsg += msg.author + ' ' +
+        (result <= odds ? '**Yes**.' : '**No**.');
     chan.send(resultMsg);
+}
+
+function askTable(msg, args) {
+    oracle = oracles.map[args[0]];
+    const roll = d(oracle.d ? oracle.d : 100);
+
+    var k;
+    for (k in oracle.results) {
+        console.info(`${roll}? ${k}=${oracle.results[k]}`);
+        if (k >= roll) break;
+    }
+    msg.channel.send(`${roll}: ${oracle.results[k]}`);
+
+
+    // var result;
+    // for (let i = 0; i < oracle.results.length; i++) {
+    //     const r = oracle.results[i];
+    //     if ()
+    // }
+
+    //msg.channel.send(result);
 }
 
 function d(sides, count = 1) {
@@ -120,9 +173,9 @@ function actionRoll(msg, modifiers) {
             m.push(s);
         return m;
     }, []).join('+') : '0';
-    var result = ''
-        + `**${action + mods}** (**${action}**+${modStr})`
-        + ` vs. **${challengeStr[0]}** & **${challengeStr[1]}**`;
+    var result = '' +
+        `**${action + mods}** (**${action}**+${modStr})` +
+        ` vs. **${challengeStr[0]}** & **${challengeStr[1]}**`;
 
     //var success = challenge.reduce(n => (action + mods) > n ? 1 : 0, 0);
     var success = 0;
@@ -159,4 +212,8 @@ function shutdown(msg) {
     msg.channel.send(`Shutting down at the request of ${msg.author}.`)
         .then(() => client.destroy())
         .then(() => process.exit(0));
+}
+
+function syncParseJSON(filename) {
+    return JSON.parse(fs.readFileSync(filename, 'utf8'))
 }

@@ -1,6 +1,10 @@
 [
     {
         "title": "Action",
+        "aliases": [
+            "a",
+            "act"
+        ],
         "results": {
             "1": "Scheme",
             "2": "Clash",
@@ -106,6 +110,10 @@
     },
     {
         "title": "Theme",
+        "aliases": [
+            "t",
+            "th"
+        ],
         "results": {
             "1": "Risk",
             "2": "Ability",
@@ -211,6 +219,9 @@
     },
     {
         "title": "Region",
+        "aliases": [
+            "r"
+        ],
         "results": {
             "12": "Barrier Islands",
             "24": "Ragged Coast",
@@ -282,6 +293,10 @@
     },
     {
         "title": "Coastal Waters Location",
+        "aliases": [
+            "cwl",
+            "coastal"
+        ],
         "results": {
             "1": "Fleet",
             "2": "Sargassum",
@@ -304,6 +319,10 @@
     },
     {
         "title": "Location Descriptor",
+        "aliases": [
+            "l",
+            "loc"
+        ],
         "results": {
             "2": "High",
             "4": "Remote",
@@ -359,7 +378,12 @@
     },
     {
         "title": "Settlement Name",
-        "type": "examples",
+        "aliases": [
+            "sn",
+            "settlement",
+            "set"
+        ],
+        "type": "nested",
         "results": {
             "15": {
                 "title": "A feature of the landscape",
@@ -476,6 +500,14 @@
     },
     {
         "title": "Quick Settlement Name Generator",
+        "aliases": [
+            "qsng",
+            "qsn",
+            "qs",
+            "quick-settlement-name",
+            "quick-settlement",
+            "qset"
+        ],
         "type": "multipleColumns",
         "headers": [
             "Prefix",
@@ -586,6 +618,10 @@
     },
     {
         "title": "Settlement Trouble",
+        "aliases": [
+            "set-troub",
+            "st"
+        ],
         "results": {
             "2": "Outsiders rejected",
             "4": "Dangerous discovery",
@@ -637,6 +673,9 @@
     },
     {
         "title": "NPC Role",
+        "aliases": [
+            "npcr"
+        ],
         "results": {
             "2": "Criminal",
             "4": "Healer",
@@ -671,6 +710,9 @@
     },
     {
         "title": "Goal",
+        "aliases": [
+            "g"
+        ],
         "results": {
             "3": "Obtain an object",
             "6": "Make an agreement",
@@ -709,6 +751,9 @@
     },
     {
         "title": "NPC Descriptor",
+        "aliases": [
+            "npcd"
+        ],
         "results": {
             "1": "Stoic",
             "2": "Attractive",
@@ -814,7 +859,10 @@
     },
     {
         "title": "Ironlander Names",
-        "type": "extended",
+        "aliases": [
+            "iln",
+            "in"
+        ],
         "d": "200",
         "results": {
             "1": "Solana",
@@ -1021,6 +1069,9 @@
     },
     {
         "title": "Elf Names",
+        "aliases": [
+            "en"
+        ],
         "results": {
             "2": "Arsula",
             "4": "Naidita",
@@ -1076,6 +1127,9 @@
     },
     {
         "title": "Other Names",
+        "aliases": [
+            "on"
+        ],
         "type": "multipleColumns",
         "results": {
             "4": [
@@ -1207,6 +1261,10 @@
     },
     {
         "title": "Combat Action",
+        "aliases": [
+            "comact",
+            "ca"
+        ],
         "results": {
             "3": "Compel a surrender.",
             "6": "Coordinate with allies.",
@@ -1254,6 +1312,9 @@
     },
     {
         "title": "Major Plot Twist",
+        "aliases": [
+            "mpt"
+        ],
         "results": {
             "5": "It was all a diversion.",
             "10": "A dark secret is revealed.",
@@ -1279,6 +1340,9 @@
     },
     {
         "title": "Challenge Rank",
+        "aliases": [
+            "cr"
+        ],
         "results": {
             "20": "Troublesome",
             "55": "Dangerous",
