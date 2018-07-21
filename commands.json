@@ -1,0 +1,71 @@
+{
+    "askTheOracle": {
+        "aliases": [
+            "ask",
+            "oracle",
+            "o"
+        ],
+        "argumentAliases": {
+            "lookupTable": [
+                "table",
+                "t"
+            ],
+            "0%": [
+                "no-chance",
+                "nc",
+                "impossible"
+            ],
+            "10%": [
+                "small-chance",
+                "sc"
+            ],
+            "25%": [
+                "unlikely",
+                "ul"
+            ],
+            "50%": [
+                "50-50",
+                "5050"
+            ],
+            "75%": [
+                "likely",
+                "l"
+            ],
+            "90%": [
+                "almost-certain",
+                "ac"
+            ],
+            "100%": [
+                "certain",
+                "c"
+            ]
+        },
+        "argumentLabels": {
+            "0%": "impossible",
+            "10%": "highly unlikely",
+            "25%": "unlikely",
+            "50%": "50-50",
+            "75%": "likely",
+            "90%": "almost certain"
+        }
+    },
+    "rollActionDice": {
+        "aliases": [
+            "act",
+            "a"
+        ]
+    },
+    "reconnectDiscordClient": {
+        "aliases": [
+            "reset"
+        ]
+    },
+    "exitProcess": {
+        "aliases": [
+            "shutdown",
+            "sd",
+            "exit",
+            "x"
+        ]
+    }
+}

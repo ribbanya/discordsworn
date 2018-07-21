@@ -1,16 +1,75 @@
 ﻿const discord = require("discord.js");
 const fs = require('fs');
-const assert = require('assert');
 const client = new discord.Client();
 
-//TODO: True RNG
-const prefix = '.'
+const supportedCommands = {
+    [askTheOracle.name]: {
+        'listener': askTheOracle,
+        'arguments': [
+            'lookupTable',
+            '0%',
+            '10%',
+            '25%',
+            '50%',
+            '75%',
+            '90%',
+            '100%'
+        ]
+    },
+    [rollActionDice.name]: {
+        'listener': rollActionDice
+    },
+    [reconnectDiscordClient.name]: {
+        'listener': reconnectDiscordClient
+    },
+    [exitProcess.name]: {
+        'listener': exitProcess
+    }
+};
+
+const prefixes = ['.'];
 
 const tokens = syncParseJSON('tokens.json');
-const oracles = syncParseJSON('oracles.json'); {
-    oracles.map = {};
-    for (let i = 0; i < oracles.length; i++) {
-        let oracle = oracles[i];
+const oracles = parseOracles('oracles.json');
+const commandTable = parseCommands('commands.json', supportedCommands);
+login();
+
+function parseCommands(filename, supportedCommands) {
+    const json = syncParseJSON(filename);
+    const commandTable = {};
+    const jsonKeys = Object.keys(json);
+    for (let i = 0; i < jsonKeys.length; i++) {
+        const commandKey = jsonKeys[i]
+        if (!Object.keys(supportedCommands).includes(commandKey)) {
+            console.warn(
+                `Command ${commandKey} is not supported. Skipping command.`
+            );
+            continue;
+        }
+        const commandValue = json[commandKey];
+        //TODO: Arguments from json
+        const listener = supportedCommands[commandKey].listener;
+        if (commandValue.aliases && commandValue.aliases.length > 0) {
+            const aliases = commandValue.aliases;
+            for (let i = 0; i < aliases.length; i++) {
+                commandTable[aliases[i]] = listener;
+            }
+        } else {
+            console.warn(
+                `Command '${commandKey}' does not have any aliases. ` +
+                `Using '${commandKey}' instead.`
+            );
+            commandTable[commandKey] = listener;
+        }
+    }
+    return commandTable;
+}
+
+function parseOracles(filename) {
+    const json = syncParseJSON(filename);
+    json.map = {};
+    for (let i = 0; i < json.length; i++) {
+        let oracle = json[i];
 
         if (oracle.type) {
             console.info(`${oracle.title}: ${oracle.type}`)
@@ -20,55 +79,38 @@ const oracles = syncParseJSON('oracles.json'); {
             console.warn(`Oracle at index ${i} is missing a title field.`);
             continue;
         }
-        oracles.map[formatAlias(oracle.title)] = oracle;
+        json.map[formatAlias(oracle.title)] = oracle;
 
         if (!oracle.aliases) continue;
 
         for (let i = 0; i < oracle.aliases.length; i++) {
-            oracles.map[formatAlias(oracle.aliases[i])] = oracle;
+            json.map[formatAlias(oracle.aliases[i])] = oracle;
         }
     }
+    return json;
 }
-login();
-
 
 function formatAlias(s) {
     return s.toLowerCase().replace(/\s/, '-');
 }
 
-client.on("ready", () => {
-    console.log("Ready.");
+client.on('ready', () => {
+    console.log('Ready.');
 });
 
-client.on("message", (msg) => {
+client.on('message', (msg) => {
     args = msg.content.split(' ');
     const chan = msg.channel;
-    if (!args[0].startsWith(prefix))
-        return;
-    var cmd = args[0].substring(1).toLowerCase();
-    args = args.slice(1);
-    switch (cmd) {
-        case 'act':
-        case 'a':
-            actionRoll(msg, args);
+    var prefixMatch = false;
+    for (let i = 0; i < prefixes.length; i++) {
+        if (msg.content.startsWith(prefixes[i])) {
+            prefixMatch = true;
             break;
-        case 'rngtest':
-            var s = rInts(1, 9, 1000);
-            s = s.join(' ');
-            chan.send(s);
-            break;
-        case 'shutdown':
-            shutdown(msg);
-            break;
-        case 'reset':
-            reset(chan);
-            break;
-        case 'oracle':
-        case 'o':
-        case 'ask':
-            askTheOracle(msg, args);
-            break;
+        }
     }
+    if (!prefixMatch) return;
+    var cmd = args[0].substring(1).toLowerCase();
+    commandTable[cmd](msg, args.slice(1));
 });
 
 function askTheOracle(msg, args) {
@@ -100,7 +142,7 @@ function askTheOracle(msg, args) {
         chan.send(invalidArgsMsg)
         return;
     }
-    if (args[0] == "table" | args[0] == "t") {
+    if (args[0] == 'table' | args[0] == 't') {
         askTable(msg, args.slice(1));
         return;
     }
@@ -129,6 +171,7 @@ function askTheOracle(msg, args) {
 }
 
 function askTable(msg, args) {
+    if (args.length < 1) return; //TODO: Send error
     oracle = oracles.map[args[0]];
     const roll = d(oracle.d ? oracle.d : 100);
 
@@ -158,9 +201,9 @@ function rInt(min, max, count = 1) {
     return Array.apply(null, Array(count)).map(n => rInt(min, max))
 }
 
-function actionRoll(msg, modifiers) {
+function rollActionDice(msg, args) {
     var chan = msg.channel;
-    var mods = modifiers.reduce(function (m, s) {
+    var mods = args.reduce(function (m, s) {
         var i = parseInt(s);
         if (!i) return m;
         return m + i;
@@ -168,7 +211,7 @@ function actionRoll(msg, modifiers) {
     var challenge = d(10, 2);
     var action = d(6);
     var challengeStr = challenge.map(n => (action + mods) > n ? `__${n}__` : n);
-    modStr = modifiers.length > 0 ? modifiers.reduce((m, s) => {
+    modStr = args.length > 0 ? args.reduce((m, s) => {
         if (parseInt(s))
             m.push(s);
         return m;
@@ -184,7 +227,7 @@ function actionRoll(msg, modifiers) {
             success++;
     }
 
-    var successStr = ["Miss...", "Weak hit!", "_Strong hit!_"][success];
+    var successStr = ['Miss...', 'Weak hit!', '_Strong hit!_'][success];
     result += `\n${msg.author} ${successStr}`
 
     if (challenge[0] == challenge[1])
@@ -196,19 +239,19 @@ function login() {
     client.login(tokens.discord.botAccount);
 }
 
-function reset(channel) {
-    channel.send('Resetting...')
+function reconnectDiscordClient(msg, args) {
+    msg.channel.send('Resetting...')
         .then(msg => client.destroy())
         .then(() => login());
 }
 
-function shutdown(msg) {
+function exitProcess(msg, args) {
     const a = msg.author;
     console.info(`Shutdown request received from ${a.id} (${a.username}#${a.discriminator}.)`);
     if (a.id != tokens.discord.ownerId)
         return;
 
-    console.log("Shutting down.");
+    console.log('Shutting down.');
     msg.channel.send(`Shutting down at the request of ${msg.author}.`)
         .then(() => client.destroy())
         .then(() => process.exit(0));
