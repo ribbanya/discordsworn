@@ -5,48 +5,48 @@
             "oracle",
             "o"
         ],
-        "argumentAliases": {
+        "argAliases": {
             "lookupTable": [
                 "table",
                 "t"
             ],
-            "0%": [
+            "0": [
                 "no-chance",
                 "nc",
                 "impossible"
             ],
-            "10%": [
+            "10": [
                 "small-chance",
                 "sc"
             ],
-            "25%": [
+            "25": [
                 "unlikely",
                 "ul"
             ],
-            "50%": [
+            "50": [
                 "50-50",
                 "5050"
             ],
-            "75%": [
+            "75": [
                 "likely",
                 "l"
             ],
-            "90%": [
+            "90": [
                 "almost-certain",
                 "ac"
             ],
-            "100%": [
+            "100": [
                 "certain",
                 "c"
             ]
         },
-        "argumentLabels": {
-            "0%": "impossible",
-            "10%": "highly unlikely",
-            "25%": "unlikely",
-            "50%": "50-50",
-            "75%": "likely",
-            "90%": "almost certain"
+        "argLabels": {
+            "0": "impossible",
+            "10": "highly unlikely",
+            "25": "unlikely",
+            "50": "50-50",
+            "75": "likely",
+            "90": "almost certain"
         }
     },
     "rollActionDice": {

@@ -3,66 +3,94 @@ const fs = require('fs');
 const client = new discord.Client();
 
 const supportedCommands = {
-    [askTheOracle.name]: {
-        'listener': askTheOracle,
-        'arguments': [
-            'lookupTable',
-            '0%',
-            '10%',
-            '25%',
-            '50%',
-            '75%',
-            '90%',
-            '100%'
-        ]
-    },
-    [rollActionDice.name]: {
-        'listener': rollActionDice
-    },
-    [reconnectDiscordClient.name]: {
-        'listener': reconnectDiscordClient
-    },
-    [exitProcess.name]: {
-        'listener': exitProcess
-    }
+    [askTheOracle.name]: askTheOracle,
+    [rollActionDice.name]: rollActionDice,
+    [reconnectDiscordClient.name]: reconnectDiscordClient,
+    [exitProcess.name]: exitProcess
 };
+
+const supportedArgs = {
+    [askTheOracle.name]: [
+        'lookupTable',
+        '0',
+        '10',
+        '25',
+        '50',
+        '75',
+        '90',
+        '100'
+    ]
+}
 
 const prefixes = ['.'];
 
 const tokens = syncParseJSON('tokens.json');
 const oracles = parseOracles('oracles.json');
-const commandTable = parseCommands('commands.json', supportedCommands);
+const cmdTable = parseCommands('commands.json', supportedCommands, supportedArgs);
 login();
 
-function parseCommands(filename, supportedCommands) {
+function parseCommands(filename) {
     const json = syncParseJSON(filename);
-    const commandTable = {};
+    parseAliases(json);
+    return cmdListeners;
+}
+
+function parseAliases(json) {
+    const cmdListeners = {};
     const jsonKeys = Object.keys(json);
     for (let i = 0; i < jsonKeys.length; i++) {
-        const commandKey = jsonKeys[i]
-        if (!Object.keys(supportedCommands).includes(commandKey)) {
+        const cmdKey = jsonKeys[i]
+        if (keysIncludes(supportedCommands, cmdKey)) {
             console.warn(
-                `Command ${commandKey} is not supported. Skipping command.`
+                `Command ${cmdKey} is not supported. Skipping command.`
             );
             continue;
         }
-        const commandValue = json[commandKey];
+        const cmdValue = json[cmdKey];
         //TODO: Arguments from json
-        const listener = supportedCommands[commandKey].listener;
-        if (commandValue.aliases && commandValue.aliases.length > 0) {
-            const aliases = commandValue.aliases;
+        const listener = supportedCommands[cmdKey].listener;
+        const aliases = cmdValue.aliases;
+        if (!isNullOrEmpty(aliases)) {
             for (let i = 0; i < aliases.length; i++) {
-                commandTable[aliases[i]] = listener;
+                cmdListeners[aliases[i]] = listener;
             }
         } else {
             console.warn(
-                `Command '${commandKey}' does not have any aliases. ` +
-                `Using '${commandKey}' instead.`
+                `Command '${cmdKey}' does not have any aliases. ` +
+                `Using '${cmdKey}' instead.`
             );
-            commandTable[commandKey] = listener;
+            cmdListeners[cmdKey] = listener;
         }
+
+        var returnMe = parseArgAliases(json, cmdKey)
     }
-    return commandTable;
+}
+
+
+function parseArgAliases(json, cmdKey) {
+    const entries = json[cmdKey].argAliases.entries();
+  
+    if (isNullOrEmpty(entries)) return;
+
+    return entries.reduce((table, kvp) => {
+        const argKey = kvp[0]
+        if (!keysIncludes(supportedArgs, argKey)) {
+            console.warn(
+                `Command ${cmdKey}'s argument '${argKey}' ` +
+                `is not supported. Skipping aliases.`
+            );
+            return table;
+        }
+        kvp[1].forEach(argAlias => table[argAlias] = argKey);
+    });
+}
+
+function isNullOrEmpty(array) {
+    return !array || array.length < 1;
+}
+
+function keysIncludes(object, key) {
+    return Object.keys(object).includes(key);
 }
 
 function parseOracles(filename) {
@@ -110,7 +138,7 @@ client.on('message', (msg) => {
     }
     if (!prefixMatch) return;
     var cmd = args[0].substring(1).toLowerCase();
-    commandTable[cmd](msg, args.slice(1));
+    cmdTable[cmd](msg, args.slice(1));
 });
 
 function askTheOracle(msg, args) {
