@@ -22,70 +22,85 @@ const supportedArgs = {
     ]
 }
 
-const prefixes = ['.'];
+const prefixes = ['.']; //TODO user settings
 
-const tokens = syncParseJSON('tokens.json');
-const oracles = parseOracles('oracles.json');
-const cmdTable = parseCommands('commands.json', supportedCommands, supportedArgs);
+const tokens = syncParseJson('tokens.json');
+const oracles = parseOraclesJson(syncParseJson('oracles.json'));
+
+const cmdJson = parseCmdJson(syncParseJson('commands.json'));
+
 login();
 
-function parseCommands(filename) {
-    const json = syncParseJSON(filename);
-    parseAliases(json);
-    return cmdListeners;
-}
+function parseCmdJson(json) {
+    const cmdJumps = {};
+    const cmdData = {};
 
-function parseAliases(json) {
-    const cmdListeners = {};
-    const jsonKeys = Object.keys(json);
-    for (let i = 0; i < jsonKeys.length; i++) {
-        const cmdKey = jsonKeys[i]
-        if (keysIncludes(supportedCommands, cmdKey)) {
+
+    const parseJumps = (cmdKey) => {
+        if (!keysIncludes(supportedCommands, cmdKey)) {
             console.warn(
                 `Command ${cmdKey} is not supported. Skipping command.`
             );
-            continue;
+            return;
         }
-        const cmdValue = json[cmdKey];
-        //TODO: Arguments from json
-        const listener = supportedCommands[cmdKey].listener;
-        const aliases = cmdValue.aliases;
-        if (!isNullOrEmpty(aliases)) {
-            for (let i = 0; i < aliases.length; i++) {
-                cmdListeners[aliases[i]] = listener;
-            }
-        } else {
+        const listener = supportedCommands[cmdKey];
+        const aliases = json[cmdKey].aliases;
+        if (isMissing(aliases)) {
             console.warn(
                 `Command '${cmdKey}' does not have any aliases. ` +
                 `Using '${cmdKey}' instead.`
             );
-            cmdListeners[cmdKey] = listener;
+            cmdJumps[cmdKey] = listener;
+        } else {
+            aliases.forEach(alias => cmdJumps[alias] = listener);
         }
+    };
 
-        var returnMe = parseArgAliases(json, cmdKey)
-    }
-}
+    const parseArgLabels = (key) => json[key].argLabels || null;
 
+    const parseArgJumps = (cmdKey) => {
+        const group = json[cmdKey].argAliases;
 
-function parseArgAliases(json, cmdKey) {
-    const entries = json[cmdKey].argAliases.entries();
-  
-    if (isNullOrEmpty(entries)) return;
+        if (isMissing(group)) return null;
 
-    return entries.reduce((table, kvp) => {
-        const argKey = kvp[0]
-        if (!keysIncludes(supportedArgs, argKey)) {
-            console.warn(
-                `Command ${cmdKey}'s argument '${argKey}' ` +
-                `is not supported. Skipping aliases.`
-            );
-            return table;
+        const argJumps = {};
+
+        const keys = Object.keys(group);
+        keys.forEach(key => {
+            const list = group[key];
+            if (isMissing(list)) return;
+            if (!supportedArgs[cmdKey].includes(key)) {
+                console.warn(
+                    `Command ${cmdKey}'s argument '${key}' ` +
+                    `is not supported. Skipping aliases.`
+                );
+                return;
+            }
+            list.forEach(item => argJumps[item] = key);
+        });
+        return argJumps;
+    };
+
+    Object.keys(json).forEach(cmdKey => {
+        parseJumps(cmdKey);
+
+        const argJumps = parseArgJumps(cmdKey);
+        const argLabels = parseArgLabels(cmdKey);
+        if (argJumps || argLabels) {
+            cmdData[cmdKey] = {};
+            const data = cmdData[cmdKey];
+            if (argJumps) data.argJumps = argJumps;
+            if (argLabels) data.argLabels = argLabels;
         }
-        kvp[1].forEach(argAlias => table[argAlias] = argKey);
     });
+
+    return {
+        cmdJumps: cmdJumps,
+        cmdData: cmdData
+    };
 }
 
-function isNullOrEmpty(array) {
+function isMissing(array) {
     return !array || array.length < 1;
 }
 
@@ -93,33 +108,26 @@ function keysIncludes(object, key) {
     return Object.keys(object).includes(key);
 }
 
-function parseOracles(filename) {
-    const json = syncParseJSON(filename);
+function parseOraclesJson(json) {
     json.map = {};
-    for (let i = 0; i < json.length; i++) {
-        let oracle = json[i];
-
+    json.forEach(oracle => {
         if (oracle.type) {
             console.info(`${oracle.title}: ${oracle.type}`)
-            continue; //TODO
+            return; //TODO
         }
         if (!oracle.title) {
             console.warn(`Oracle at index ${i} is missing a title field.`);
-            continue;
+            return;
         }
-        json.map[formatAlias(oracle.title)] = oracle;
 
-        if (!oracle.aliases) continue;
+        const mapOracle = (s) => json.map[s.toLowerCase().replace(/\s/, '-')] = oracle;
 
-        for (let i = 0; i < oracle.aliases.length; i++) {
-            json.map[formatAlias(oracle.aliases[i])] = oracle;
-        }
-    }
+        mapOracle(oracle.title);
+
+        if (!oracle.aliases) return;
+        oracle.aliases.forEach(e => mapOracle(e));
+    });
     return json;
-}
-
-function formatAlias(s) {
-    return s.toLowerCase().replace(/\s/, '-');
 }
 
 client.on('ready', () => {
@@ -129,7 +137,7 @@ client.on('ready', () => {
 client.on('message', (msg) => {
     args = msg.content.split(' ');
     const chan = msg.channel;
-    var prefixMatch = false;
+    let prefixMatch = false;
     for (let i = 0; i < prefixes.length; i++) {
         if (msg.content.startsWith(prefixes[i])) {
             prefixMatch = true;
@@ -137,35 +145,20 @@ client.on('message', (msg) => {
         }
     }
     if (!prefixMatch) return;
-    var cmd = args[0].substring(1).toLowerCase();
-    cmdTable[cmd](msg, args.slice(1));
+    let cmd = args[0].substring(1).toLowerCase();
+    cmdJson.cmdJumps[cmd](msg, args.slice(1));
 });
 
 function askTheOracle(msg, args) {
     const chan = msg.channel;
-    const tierMap = {
-        'almost-certain': 90,
-        'ac': 90,
-        'likely': 75,
-        'l': 75,
-        '50-50': 50,
-        'unlikely': 25,
-        'ul': 25,
-        'small-chance': 10,
-        'sc': 10
-    };
-    const oddsMap = {
-        90: 'almost certain',
-        75: 'likely',
-        50: '50-50',
-        25: 'unlikely',
-        10: 'highly unlikely'
-    }
+    const data = cmdJson.cmdData[askTheOracle.name];
+    const argJumps = data.argJumps;
+    const argLabels = data.argLabels;
     const invalidArgsMsg =
         msg.author +
         ' A likelihood is required. Please use a whole number between ' +
         '0-100 or one of the following:\n' +
-        Object.keys(tierMap).map(s => '`' + s + '`').join(', ');
+        Object.keys(argJumps).map(s => '`' + s + '`').join(', ');
     if (args.length < 1) {
         chan.send(invalidArgsMsg)
         return;
@@ -174,22 +167,22 @@ function askTheOracle(msg, args) {
         askTable(msg, args.slice(1));
         return;
     }
-    var likelihood = args[0].toLowerCase();
-    var question = args.length > 2 ? args.slice(1).join(' ') : null;
-    var odds = tierMap[likelihood] || Number(likelihood);
+    let likelihood = args[0].toLowerCase();
+    let question = args.length > 2 ? args.slice(1).join(' ') : null;
+    let odds = argJumps[likelihood] || Number(likelihood);
     if (odds == null || odds != ~~odds || odds < 0 || odds > 100) {
         chan.send(invalidArgsMsg);
         return;
     }
 
-    likelihood = oddsMap[odds];
+    likelihood = argLabels[odds];
     if (likelihood == null) {
         likelihood = `The result is **${odds}%** likely vs.`
     } else {
         likelihood = `The result is ${likelihood} (**${odds}%**) vs.`
     }
-    var result = d(100);
-    var resultMsg = `${likelihood} **${result}**\n`;
+    let result = d(100);
+    let resultMsg = `${likelihood} **${result}**\n`;
     if (question != null) {
         resultMsg += '"' + question + '"\n';
     }
@@ -202,22 +195,8 @@ function askTable(msg, args) {
     if (args.length < 1) return; //TODO: Send error
     oracle = oracles.map[args[0]];
     const roll = d(oracle.d ? oracle.d : 100);
-
-    var k;
-    for (k in oracle.results) {
-        console.info(`${roll}? ${k}=${oracle.results[k]}`);
-        if (k >= roll) break;
-    }
-    msg.channel.send(`${roll}: ${oracle.results[k]}`);
-
-
-    // var result;
-    // for (let i = 0; i < oracle.results.length; i++) {
-    //     const r = oracle.results[i];
-    //     if ()
-    // }
-
-    //msg.channel.send(result);
+    const key = Object.keys(oracle.results).find(k => k >= roll);
+    msg.channel.send(`${roll}: ${oracle.results[key]}`);
 }
 
 function d(sides, count = 1) {
@@ -230,32 +209,32 @@ function rInt(min, max, count = 1) {
 }
 
 function rollActionDice(msg, args) {
-    var chan = msg.channel;
-    var mods = args.reduce(function (m, s) {
-        var i = parseInt(s);
+    let chan = msg.channel;
+    let mods = args.reduce(function (m, s) {
+        let i = parseInt(s);
         if (!i) return m;
         return m + i;
     }, 0);
-    var challenge = d(10, 2);
-    var action = d(6);
-    var challengeStr = challenge.map(n => (action + mods) > n ? `__${n}__` : n);
+    let challenge = d(10, 2);
+    let action = d(6);
+    let challengeStr = challenge.map(n => (action + mods) > n ? `__${n}__` : n);
     modStr = args.length > 0 ? args.reduce((m, s) => {
         if (parseInt(s))
             m.push(s);
         return m;
     }, []).join('+') : '0';
-    var result = '' +
+    let result = '' +
         `**${action + mods}** (**${action}**+${modStr})` +
         ` vs. **${challengeStr[0]}** & **${challengeStr[1]}**`;
 
-    //var success = challenge.reduce(n => (action + mods) > n ? 1 : 0, 0);
-    var success = 0;
-    for (var i = 0; i < challenge.length; i++) {
+    //let success = challenge.reduce(n => (action + mods) > n ? 1 : 0, 0);
+    let success = 0;
+    for (let i = 0; i < challenge.length; i++) {
         if (action + mods > challenge[i])
             success++;
     }
 
-    var successStr = ['Miss...', 'Weak hit!', '_Strong hit!_'][success];
+    let successStr = ['Miss...', 'Weak hit!', '_Strong hit!_'][success];
     result += `\n${msg.author} ${successStr}`
 
     if (challenge[0] == challenge[1])
@@ -285,6 +264,6 @@ function exitProcess(msg, args) {
         .then(() => process.exit(0));
 }
 
-function syncParseJSON(filename) {
+function syncParseJson(filename) {
     return JSON.parse(fs.readFileSync(filename, 'utf8'))
 }
