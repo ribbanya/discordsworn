@@ -11,7 +11,7 @@ const supportedCommands = {
 
 const supportedArgs = {
     [askTheOracle.name]: [
-        'lookupTable',
+        oracleLookupTable.name,
         '0',
         '10',
         '25',
@@ -146,7 +146,12 @@ client.on('message', (msg) => {
     }
     if (!prefixMatch) return;
     let cmd = args[0].substring(1).toLowerCase();
-    cmdJson.cmdJumps[cmd](msg, args.slice(1));
+    try {
+        cmdJson.cmdJumps[cmd](msg, args.slice(1));
+    } catch (error) {
+        msg.channel.send(`${msg.author} Error: ${error.message}.`);
+        console.error(`Error encountered while handling '${msg.content}':`, error);
+    }
 });
 
 function askTheOracle(msg, args) {
@@ -163,8 +168,8 @@ function askTheOracle(msg, args) {
         chan.send(invalidArgsMsg)
         return;
     }
-    if (args[0] == 'table' | args[0] == 't') {
-        askTable(msg, args.slice(1));
+    if (matchArg(askTheOracle, args[0], oracleLookupTable)) {
+        oracleLookupTable(msg, args.slice(1));
         return;
     }
     let likelihood = args[0].toLowerCase();
@@ -191,12 +196,20 @@ function askTheOracle(msg, args) {
     chan.send(resultMsg);
 }
 
-function askTable(msg, args) {
+function oracleLookupTable(msg, args) {
     if (args.length < 1) return; //TODO: Send error
     oracle = oracles.map[args[0]];
     const roll = d(oracle.d ? oracle.d : 100);
     const key = Object.keys(oracle.results).find(k => k >= roll);
     msg.channel.send(`${roll}: ${oracle.results[key]}`);
+}
+
+function resolveArg(cmdFn, argAlias) {
+    return cmdJson.cmdData[cmdFn.name].argJumps[argAlias];
+}
+
+function matchArg(cmdFn, argAlias, argFn) {
+    return resolveArg(cmdFn, argAlias) == argFn.name;
 }
 
 function d(sides, count = 1) {
