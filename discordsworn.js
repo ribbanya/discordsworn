@@ -223,21 +223,20 @@ function rInt(min, max, count = 1) {
 
 function rollActionDice(msg, args) {
     let chan = msg.channel;
-    let mods = args.reduce(function (m, s) {
-        let i = parseInt(s);
-        if (!i) return m;
-        return m + i;
+    var mods = args.reduce(function (m, s) {
+        const i = parseInt(s);
+        return m + (i ? i : 0);
     }, 0);
     let challenge = d(10, 2);
     let action = d(6);
     let challengeStr = challenge.map(n => (action + mods) > n ? `__${n}__` : n);
-    modStr = args.length > 0 ? args.reduce((m, s) => {
-        if (parseInt(s))
-            m.push(s);
-        return m;
-    }, []).join('+') : '0';
+    var modStr = args.reduce((s, n) => {
+        const i = parseInt(n);
+        if (!i) return s;
+        return s + (i < 0 ? '-' : '+') + Math.abs(i)
+    }, '');
     let result = '' +
-        `**${action + mods}** (**${action}**+${modStr})` +
+        `**${action + mods}** (**${action}**${modStr})` +
         ` vs. **${challengeStr[0]}** & **${challengeStr[1]}**`;
 
     //let success = challenge.reduce(n => (action + mods) > n ? 1 : 0, 0);
