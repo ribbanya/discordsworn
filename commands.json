@@ -1,5 +1,5 @@
 {
-    "askTheOracle": {
+    "is_askTheOracle": {
         "aliases": [
             "ask",
             "oracle",
@@ -49,10 +49,23 @@
             "90": "almost certain"
         }
     },
-    "rollActionDice": {
+    "is_rollActionDice": {
         "aliases": [
+            "ironsworn-action",
+            "is",
             "act",
             "a"
+        ]
+    },
+    "aw_rollMoveDice": {
+        "aliases": [
+            "apocalypse-world-move",
+            "aw-move",
+            "aw",
+            "pbta",
+            "pbta-move",
+            "move",
+            "m"
         ]
     },
     "reconnectDiscordClient": {

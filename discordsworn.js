@@ -1,16 +1,18 @@
-E¿const discord = require("discord.js");
+ï»¿const discord = require("discord.js");
 const fs = require('fs');
 const client = new discord.Client();
 
-const supportedCommands = {
-    [askTheOracle.name]: askTheOracle,
-    [rollActionDice.name]: rollActionDice,
-    [reconnectDiscordClient.name]: reconnectDiscordClient,
-    [exitProcess.name]: exitProcess
-};
+const supportedCommands = [
+    is_askTheOracle, is_rollActionDice,
+    aw_rollMoveDice,
+    reconnectDiscordClient, exitProcess
+].reduce((sc, fn) => {
+    sc[fn.name] = fn;
+    return sc;
+}, {}); //TODO separate module
 
 const supportedArgs = {
-    [askTheOracle.name]: [
+    [is_askTheOracle.name]: [
         oracleLookupTable.name,
         '0',
         '10',
@@ -35,6 +37,8 @@ function parseCmdJson(json) {
     const cmdJumps = {};
     const cmdData = {};
 
+    const isMissing = (array) => !array || array.length < 1;
+    const keysIncludes = (object, key) => Object.keys(object).includes(key);
 
     const parseJumps = (cmdKey) => {
         if (!keysIncludes(supportedCommands, cmdKey)) {
@@ -52,7 +56,13 @@ function parseCmdJson(json) {
             );
             cmdJumps[cmdKey] = listener;
         } else {
-            aliases.forEach(alias => cmdJumps[alias] = listener);
+            aliases.forEach(alias => {
+                if (cmdJumps.hasOwnProperty(alias)) {
+                    console.warn(`'${cmdKey}' is attempting to assign duplicate alias '${alias}'. Skipping.`);
+                    return;
+                }
+                cmdJumps[alias] = listener;
+            });
         }
     };
 
@@ -76,7 +86,13 @@ function parseCmdJson(json) {
                 );
                 return;
             }
-            list.forEach(item => argJumps[item] = key);
+            list.forEach(alias => {
+                if (argJumps.hasOwnProperty(alias)) {
+                    console.warn(`'${cmdKey}.${key}' is attempting to assign duplicate alias '${alias}'. Skipping.`);
+                    return;
+                }
+                argJumps[alias] = key
+            });
         });
         return argJumps;
     };
@@ -98,14 +114,6 @@ function parseCmdJson(json) {
         cmdJumps: cmdJumps,
         cmdData: cmdData
     };
-}
-
-function isMissing(array) {
-    return !array || array.length < 1;
-}
-
-function keysIncludes(object, key) {
-    return Object.keys(object).includes(key);
 }
 
 function parseOraclesJson(json) {
@@ -135,10 +143,14 @@ client.on('ready', () => {
 });
 
 client.on('message', (msg) => {
+    args = msg.content.split(' ');
     if (!prefixes.find(s => msg.content.startsWith(s)))
         return;
-    args = msg.content.split(' ');
-    let cmd = args[0].substring(1).toLowerCase();
+    const cmd = args[0].substring(1).toLowerCase();
+    if (!cmdJson.cmdJumps[cmd]) {
+        msg.channel.send(`${msg.author} Unrecognized command \`${cmd}\`.`);
+        return;
+    }
     try {
         cmdJson.cmdJumps[cmd](msg, args.slice(1));
     } catch (error) {
@@ -147,9 +159,9 @@ client.on('message', (msg) => {
     }
 });
 
-function askTheOracle(msg, args) {
+function is_askTheOracle(msg, args) {
     const chan = msg.channel;
-    const data = cmdJson.cmdData[askTheOracle.name];
+    const data = cmdJson.cmdData[is_askTheOracle.name];
     const argJumps = data.argJumps;
     const argLabels = data.argLabels;
     const invalidArgsMsg =
@@ -161,13 +173,13 @@ function askTheOracle(msg, args) {
         chan.send(invalidArgsMsg)
         return;
     }
-    if (matchArg(askTheOracle, args[0], oracleLookupTable)) {
+    if (matchArg(is_askTheOracle, args[0], oracleLookupTable)) {
         oracleLookupTable(msg, args.slice(1));
         return;
     }
-    let likelihood = args[0].toLowerCase();
-    let question = args.length > 2 ? args.slice(1).join(' ') : null;
-    let odds = argJumps[likelihood] || Number(likelihood);
+    const likelihood = args[0].toLowerCase();
+    const question = args.length > 2 ? args.slice(1).join(' ') : null;
+    const odds = argJumps[likelihood] || Number(likelihood);
     if (odds == null || odds != ~~odds || odds < 0 || odds > 100) {
         chan.send(invalidArgsMsg);
         return;
@@ -179,8 +191,8 @@ function askTheOracle(msg, args) {
     } else {
         likelihood = `The result is ${likelihood} (**${odds}%**) vs.`
     }
-    let result = d(100);
-    let resultMsg = `${likelihood} **${result}**\n`;
+    const result = d(100);
+    const resultMsg = `${likelihood} **${result}**\n`;
     if (question != null) {
         resultMsg += '"' + question + '"\n';
     }
@@ -214,23 +226,24 @@ function rInt(min, max, count = 1) {
     return Array.apply(null, Array(count)).map(n => rInt(min, max))
 }
 
-function rollActionDice(msg, args) {
-    let chan = msg.channel;
-    let mods = args.reduce((m, s) => {
+function is_rollActionDice(msg, args) {
+    const chan = msg.channel;
+    const mods = args.reduce(function (m, s) {
         const i = parseInt(s);
-        return m(i ? i : 0);
+        return m + (i ? i : 0);
     }, 0);
-    let challenge = d(10, 2);
-    let action = d(6);
-    let challengeStr = challenge.map(n => (action + mods) > n ? `__${n}__` : n);
-    var modStr = args.reduce((s, n) => {
+    const challenge = d(10, 2);
+    const action = d(6);
+    const challengeStr = challenge.map(n => (action + mods) > n ? `__${n}__` : n);
+    const modStr = args.reduce((s, n) => {
         const i = parseInt(n);
         if (!i && i !== 0) return s;
         return s + (i < 0 ? '-' : '+') + Math.abs(i)
     }, '');
-    let result = '' +
-        `**${action + mods}** (**${action}**${modStr})` +
-        ` vs. **${challengeStr[0]}** & **${challengeStr[1]}**`;
+
+    let result = `**${action + mods}**`;
+    if (modStr) result += ` (**${action}**${modStr})`;
+    result += ` vs. **${challengeStr[0]}** & **${challengeStr[1]}**`;
 
     //let success = challenge.reduce(n => (action + mods) > n ? 1 : 0, 0);
     let success = 0;
@@ -239,11 +252,37 @@ function rollActionDice(msg, args) {
             success++;
     }
 
-    let successStr = ['Miss...', 'Weak hit!', '_Strong hit!_'][success];
+    const successStr = ['Miss...', 'Weak hit!', '_Strong hit!_'][success];
     result += `\n${msg.author} ${successStr}`
 
     if (challenge[0] == challenge[1])
         result += ' _MATCH!_';
+    chan.send(result)
+}
+
+function aw_rollMoveDice(msg, args) {
+    var chan = msg.channel;
+    var mods = args.reduce(function (m, s) {
+        const i = parseInt(s);
+        return m + (i ? i : 0);
+    }, 0);
+    var action = d(6, 2);
+    const total = action[0] + action[1] + mods;
+    var modStr = args.reduce((s, n) => {
+        const i = parseInt(n);
+        if (!i && i !== 0) return s;
+        return s + ' ' + (i < 0 ? '-' : '+') + ' ' + Math.abs(i)
+    }, '');
+    var result = '' +
+        `**${total}** (**${action[0]}** & **${action[1]}**${modStr})`
+
+    var success;
+    if (total <= 6) success = 0;
+    else if (total <= 9) success = 1;
+    else success = 2;
+    var successStr = ["Miss...", "Mixed success!", "_Success!_"][success];
+    result += `\n${msg.author} ${successStr}`
+
     chan.send(result)
 }
 
@@ -253,7 +292,7 @@ function login() {
 
 function reconnectDiscordClient(msg, args) {
     msg.channel.send('Resetting...')
-        .then(msg => client.destroy())
+        .then(() => client.destroy())
         .then(() => login());
 }
 
