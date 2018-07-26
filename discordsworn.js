@@ -232,7 +232,7 @@ function rollActionDice(msg, args) {
     let challengeStr = challenge.map(n => (action + mods) > n ? `__${n}__` : n);
     var modStr = args.reduce((s, n) => {
         const i = parseInt(n);
-        if (!i) return s;
+        if (!i && i !== 0) return s;
         return s + (i < 0 ? '-' : '+') + Math.abs(i)
     }, '');
     let result = '' +
