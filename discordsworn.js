@@ -135,16 +135,9 @@ client.on('ready', () => {
 });
 
 client.on('message', (msg) => {
+    if (!prefixes.find(s => msg.content.startsWith(s)))
+        return;
     args = msg.content.split(' ');
-    const chan = msg.channel;
-    let prefixMatch = false;
-    for (let i = 0; i < prefixes.length; i++) {
-        if (msg.content.startsWith(prefixes[i])) {
-            prefixMatch = true;
-            break;
-        }
-    }
-    if (!prefixMatch) return;
     let cmd = args[0].substring(1).toLowerCase();
     try {
         cmdJson.cmdJumps[cmd](msg, args.slice(1));
@@ -223,10 +216,9 @@ function rInt(min, max, count = 1) {
 
 function rollActionDice(msg, args) {
     let chan = msg.channel;
-    let mods = args.reduce(function (m, s) {
-        let i = parseInt(s);
-        if (!i) return m;
-        return m + i;
+    let mods = args.reduce((m, s) => {
+        const i = parseInt(s);
+        return m(i ? i : 0);
     }, 0);
     let challenge = d(10, 2);
     let action = d(6);
