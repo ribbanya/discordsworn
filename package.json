@@ -5,7 +5,8 @@
   "main": "index.js",
   "dependencies": {
     "@lokidb/loki": "^2.0.0-beta.7",
-    "discord.js": "^11.3.2"
+    "discord.js": "^11.3.2",
+    "eslint": "^5.2.0"
   },
   "devDependencies": {},
   "scripts": {
