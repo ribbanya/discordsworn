@@ -25,7 +25,7 @@ const supportedArgs = {
     ]
 };
 
-const supportedOracles = [null, 'multipleColumns']; //, 'nested'];
+const supportedOracles = [null, 'multipleColumns', 'nested'];
 
 const prefixes = ['.']; //TODO user settings
 
@@ -265,25 +265,37 @@ function is_oracleLookupTable(msg, args) {
         return;
     }
     //TODO: Check for oracle.results
-    const roll = d(oracle.d ? oracle.d : 100);
-    let output = `Consulting the Oracle of **${oracle.title}** vs. **${roll}**…\n${msg.author} `;
-    const key = Object.keys(oracle.results).find(k => k >= roll);
+    let roll = d(oracle.d ? oracle.d : 100);
+    let output = `Consulting the Oracle of **${oracle.title}** vs. **${roll}**…\n`;
+    const lookup = (results, roll) => Object.keys(results).find(k => k >= roll)
+    let key = lookup(oracle.results, roll);
+    let value = oracle.results[key];
+    const list = [];
     switch (oracle.type) {
-    case null:
-        //TODO: Ensure sort of keys
-        output += `**${oracle.results[key]}**.`;
-        break;
-    case 'multipleColumns':
-        const list = [];
-        for (let i = 0; i < oracle.results[key].length; i++) {
-            let s = '';
-            if (oracle.headers && i < oracle.headers.length) {
-                s += `${oracle.headers[i]}: `;
+        case null:
+            output += `**${value}**.`;
+            break;
+        case 'multipleColumns':
+            output += `${msg.author} `;
+            for (let i = 0; i < oracle.results[key].length; i++) {
+                let s = '';
+                if (oracle.headers && i < oracle.headers.length) {
+                    s += `${oracle.headers[i]}: `;
+                }
+                s += `**${value[i]}**.`;
+                list.push(s);
             }
-            s += `**${oracle.results[key][i]}**.`;
-            list.push(s);
-        }
-        output += list.join(' ');
+            output += list.join(' ');
+            break;
+        case 'nested':
+            roll = d(value.d ? value.d : 100); //TODO: Accept nested "d"
+            output += `    **${value.title}** vs. **${roll}**…\n`;
+            key = lookup(value.results, roll);
+            output += `    _${value.prompt}_\n` +
+                `${msg.author} **${value.results[key]}**.`;
+            break;
+        default:
+            console.error(`Oracle '${oracle.title}' has unsupported type '${oracle.type}'.`);
     }
     msg.channel.send(output);
 }
