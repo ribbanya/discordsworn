@@ -1,5 +1,6 @@
 {
     "is_askTheOracle": {
+        "title": "Ask the Oracle",
         "aliases": [
             "ask",
             "oracle",
@@ -50,6 +51,7 @@
         }
     },
     "is_rollActionDice": {
+        "title": "Ironsworn Action Roll",
         "aliases": [
             "ironsworn-action",
             "is",
@@ -58,6 +60,7 @@
         ]
     },
     "aw_rollMoveDice": {
+        "title": "Apocalypse World Move Roll",
         "aliases": [
             "apocalypse-world-move",
             "aw-move",
@@ -69,11 +72,15 @@
         ]
     },
     "reconnectDiscordClient": {
+        "title": "Reconnect Client",
+        "requiresOwner": true,
         "aliases": [
             "reset"
         ]
     },
     "exitProcess": {
+        "title": "Exit Process",
+        "requiresOwner": true,
         "aliases": [
             "shutdown",
             "sd",

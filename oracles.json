@@ -1,5 +1,4 @@
-[
-    {
+[{
         "title": "Action",
         "aliases": [
             "a",
@@ -1131,6 +1130,11 @@
             "on"
         ],
         "type": "multipleColumns",
+        "headers": [
+            "Giants",
+            "Varou",
+            "Trolls"
+        ],
         "results": {
             "4": [
                 "Chony",

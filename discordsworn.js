@@ -1,5 +1,6 @@
-﻿const discord = require("discord.js");
+﻿const discord = require('discord.js');
 const fs = require('fs');
+
 const client = new discord.Client();
 
 const supportedCommands = [
@@ -22,12 +23,14 @@ const supportedArgs = {
         '90',
         '100'
     ]
-}
+};
+
+const supportedOracles = [null, 'multipleColumns']; //, 'nested'];
 
 const prefixes = ['.']; //TODO user settings
 
 function syncParseJson(filename) {
-    return JSON.parse(fs.readFileSync(filename, 'utf8'))
+    return JSON.parse(fs.readFileSync(filename, 'utf8'));
 }
 
 const tokens = syncParseJson('tokens.json');
@@ -41,30 +44,20 @@ function formatArg(arg) {
     return arg.toLowerCase().replace(/\s+/g, '-');
 }
 
-function argHelpMsg(groups) {
-    Object.keys(groups).reduce((array, key) => {
-        aliasStr = groups
-        s = `${key}: `
-        return array;
-    }, []);
-    //TODO: Arg aliases, oracle tables
+function formatArgList(argList) {
+    return argList.map(a => '`' + a + '`').join(', ');
 }
 
 function parseCmdJson(json) {
     const cmdJumps = {};
     const cmdData = {};
-    const cmdGroups = {}
+    const cmdGroups = {};
+    const cmdHelp = {};
 
     const isMissing = (array) => !array || array.length < 1;
     const keysIncludes = (object, key) => Object.keys(object).includes(key);
 
     const parseJumps = (cmdKey) => {
-        if (!keysIncludes(supportedCommands, cmdKey)) {
-            console.warn(
-                `Command ${cmdKey} is not supported. Skipping command.`
-            );
-            return false;
-        }
 
         const aliases = json[cmdKey].aliases;
         const listener = supportedCommands[cmdKey];
@@ -87,11 +80,15 @@ function parseCmdJson(json) {
                 cmdJumps[alias] = listener;
             });
         }
-        return true;
     };
 
-    const parseArgLabels = (key) => json[key].argLabels || null;
+    const parseArgLabels = (cmdKey) => json[cmdKey].argLabels || null;
 
+    const parseHelp = (cmdKey) => {
+        const aliases = json[cmdKey].aliases;
+        if (isMissing(aliases)) return;
+        cmdHelp[cmdKey] = `${cmdKey}: ${formatArgList(aliases)}`;
+    };
     const parseArgJumps = (cmdKey) => {
         const group = json[cmdKey].argAliases;
 
@@ -105,8 +102,8 @@ function parseCmdJson(json) {
             if (isMissing(list)) return;
             if (!supportedArgs[cmdKey].includes(key)) {
                 console.warn(
-                    `Command ${cmdKey}'s argument '${key}' ` +
-                    `is not supported. Skipping aliases.`
+                    `Command ${cmdKey}'s argument '${key}'` +
+                    'is not supported. Skipping aliases.'
                 );
                 return;
             }
@@ -123,52 +120,62 @@ function parseCmdJson(json) {
     };
 
     Object.keys(json).forEach(cmdKey => {
+        const cmd = json[cmdKey];
+        if (!keysIncludes(supportedCommands, cmdKey)) {
+            console.warn(
+                `Command ${cmdKey} is not supported. Skipping command.`
+            );
+            return;
+        }
         parseJumps(cmdKey);
-
+        parseHelp(cmdKey);
         const argJumps = parseArgJumps(cmdKey);
         const argLabels = parseArgLabels(cmdKey);
-        if (argJumps || argLabels) {
+        if (argJumps || argLabels || cmd.title || cmd.requiresOwner) {
             cmdData[cmdKey] = {};
             const data = cmdData[cmdKey];
             if (argJumps) data.argJumps = argJumps;
             if (argLabels) data.argLabels = argLabels;
+            if (cmd.title) data.title = cmd.title;
+            if (cmd.requiresOwner) data.requiresOwner = cmd.requiresOwner;
         }
     });
 
     return {
-        cmdJumps: cmdJumps,
         cmdData: cmdData,
-        cmdGroups: cmdGroups
+        cmdGroups: cmdGroups,
+        cmdHelp: cmdHelp,
+        cmdJumps: cmdJumps
     };
 }
 
 function parseOraclesJson(json) {
     json.map = {};
-    json.forEach(oracle => {
-        if (oracle.type) {
-            console.info(`${oracle.title}: ${oracle.type}`)
-            return; //TODO
-        }
+    for (let i = 0; i < json.length; i++) {
+        const oracle = json[i];
         if (!oracle.title) {
-            console.warn(`Oracle at index ${i} is missing a title field.`);
-            return;
+            console.warn(`Oracle at index ${i} is missing a title field. Skipping.`);
+            continue;
         }
-
+        oracle.type = oracle.type || null;
+        if (!supportedOracles.includes(oracle.type)) {
+            console.warn(`Oracle "${oracle.title}"'s type '${oracle.type}' is not supported. Skipping.`);
+            continue;
+        }
         const mapOracle = (s) => {
-
             if (json.map.hasOwnProperty(s)) {
                 console.warn(`Oracle '${oracle.title}' is attempting to assign duplicate alias '${s}'. Skipping.`);
                 return;
             }
             s = formatArg(s);
             json.map[s] = oracle;
-        }
+        };
 
         mapOracle(oracle.title);
 
-        if (!oracle.aliases) return;
+        if (!oracle.aliases) continue;
         oracle.aliases.forEach(e => mapOracle(e));
-    });
+    }
     return json;
 }
 
@@ -177,16 +184,23 @@ client.on('ready', () => {
 });
 
 client.on('message', (msg) => {
-    args = msg.content.split(' ');
+    const args = msg.content.split(' ');
     if (!prefixes.find(s => msg.content.startsWith(s)))
         return;
     const cmd = args[0].substring(1).toLowerCase();
-    if (!cmdJson.cmdJumps[cmd]) {
+    const cmdKey = cmdJson.cmdJumps[cmd];
+    if (!cmdKey) {
         msg.channel.send(`${msg.author} Unrecognized command \`${cmd}\`.`);
         return;
     }
+
+    if (cmdJson.cmdData[cmdKey.name].requiresOwner &&
+        msg.author.id != tokens.discord.ownerId) {
+        msg.channel.send(`${msg.author} You don't have permission to do that!`);
+        return;
+    }
     try {
-        cmdJson.cmdJumps[cmd](msg, args.slice(1));
+        (cmdKey)(msg, args.slice(1));
     } catch (error) {
         msg.channel.send(`${msg.author} Error: ${error.message}.`);
         console.error(`Error encountered while handling '${msg.content}':`, error);
@@ -204,14 +218,15 @@ function is_askTheOracle(msg, args) {
         '0-100 or one of the following:\n' +
         Object.keys(argJumps).map(s => '`' + s + '`').join(', ');
     if (args.length < 1) {
-        chan.send(invalidArgsMsg)
+        chan.send(invalidArgsMsg);
         return;
     }
     if (matchArg(is_askTheOracle, args[0], is_oracleLookupTable)) {
         is_oracleLookupTable(msg, args.slice(1));
         return;
     }
-    const likelihood = args[0].toLowerCase();
+
+    let likelihood = args[0].toLowerCase();
     const question = args.length > 2 ? args.slice(1).join(' ') : null;
     const odds = argJumps[likelihood] || Number(likelihood);
     if (odds == null || odds != ~~odds || odds < 0 || odds > 100) {
@@ -221,12 +236,12 @@ function is_askTheOracle(msg, args) {
 
     likelihood = argLabels[odds];
     if (likelihood == null) {
-        likelihood = `The result is **${odds}%** likely vs.`
+        likelihood = `The result is **${odds}%** likely vs.`;
     } else {
-        likelihood = `The result is ${likelihood} (**${odds}%**) vs.`
+        likelihood = `The result is ${likelihood} (**${odds}%**) vs.`;
     }
     const result = d(100);
-    const resultMsg = `${likelihood} **${result}**\n`;
+    let resultMsg = `${likelihood} **${result}**\n`;
     if (question != null) {
         resultMsg += '"' + question + '"\n';
     }
@@ -237,21 +252,40 @@ function is_askTheOracle(msg, args) {
 
 function is_oracleLookupTable(msg, args) {
     const oracleNotFoundMsg =
-        `Please specify an Oracle from the list:\n` +
+        'Please specify an Oracle from the list:\n' +
         Object.keys(oracles.map).map(s => '`' + s + '`').join(', ');
     if (args.length < 1) {
         msg.channel.send(`${msg.author} ${oracleNotFoundMsg}`);
         return;
     }
-    oracleName = args[0];
-    oracle = oracles.map[oracleName];
+    const oracleName = args[0];
+    const oracle = oracles.map[oracleName];
     if (!oracle) {
         msg.channel.send(`${msg.author} Oracle \`${oracleName}\` not found. ${oracleNotFoundMsg}`);
         return;
     }
+    //TODO: Check for oracle.results
     const roll = d(oracle.d ? oracle.d : 100);
+    let output = `Consulting the Oracle of **${oracle.title}** vs. **${roll}**…\n${msg.author} `;
     const key = Object.keys(oracle.results).find(k => k >= roll);
-    msg.channel.send(`${roll}: ${oracle.results[key]}`);
+    switch (oracle.type) {
+    case null:
+        //TODO: Ensure sort of keys
+        output += `**${oracle.results[key]}**.`;
+        break;
+    case 'multipleColumns':
+        const list = [];
+        for (let i = 0; i < oracle.results[key].length; i++) {
+            let s = '';
+            if (oracle.headers && i < oracle.headers.length) {
+                s += `${oracle.headers[i]}: `;
+            }
+            s += `**${oracle.results[key][i]}**.`;
+            list.push(s);
+        }
+        output += list.join(' ');
+    }
+    msg.channel.send(output);
 }
 
 function resolveArg(cmdFn, argAlias) {
@@ -268,7 +302,7 @@ function d(sides, count = 1) {
 
 function rInt(min, max, count = 1) {
     if (count == 1) return Math.floor(Math.random() * (max - min + 1)) + min;
-    return Array.apply(null, Array(count)).map(n => rInt(min, max))
+    return Array.apply(null, Array(count)).map(() => rInt(min, max));
 }
 
 function is_rollActionDice(msg, args) {
@@ -283,7 +317,7 @@ function is_rollActionDice(msg, args) {
     const modStr = args.reduce((s, n) => {
         const i = parseInt(n);
         if (!i && i !== 0) return s;
-        return s + (i < 0 ? '-' : '+') + Math.abs(i)
+        return s + (i < 0 ? '-' : '+') + Math.abs(i);
     }, '');
 
     let result = `**${action + mods}**`;
@@ -298,11 +332,11 @@ function is_rollActionDice(msg, args) {
     }
 
     const successStr = ['Miss...', 'Weak hit!', '_Strong hit!_'][success];
-    result += `\n${msg.author} ${successStr}`
+    result += `\n${msg.author} ${successStr}`;
 
     if (challenge[0] == challenge[1])
         result += ' _MATCH!_';
-    chan.send(result)
+    chan.send(result);
 }
 
 function aw_rollMoveDice(msg, args) {
@@ -316,36 +350,34 @@ function aw_rollMoveDice(msg, args) {
     var modStr = args.reduce((s, n) => {
         const i = parseInt(n);
         if (!i && i !== 0) return s;
-        return s + ' ' + (i < 0 ? '-' : '+') + ' ' + Math.abs(i)
+        return s + ' ' + (i < 0 ? '-' : '+') + ' ' + Math.abs(i);
     }, '');
     var result = '' +
-        `**${total}** (**${action[0]}** & **${action[1]}**${modStr})`
+        `**${total}** (**${action[0]}** & **${action[1]}**${modStr})`;
 
     var success;
     if (total <= 6) success = 0;
     else if (total <= 9) success = 1;
     else success = 2;
-    var successStr = ["Miss...", "Mixed success!", "_Success!_"][success];
-    result += `\n${msg.author} ${successStr}`
+    var successStr = ['Miss...', 'Mixed success!', '_Success!_'][success];
+    result += `\n${msg.author} ${successStr}`;
 
-    chan.send(result)
+    chan.send(result);
 }
 
 function login() {
     client.login(tokens.discord.botAccount);
 }
 
-function reconnectDiscordClient(msg, args) {
+function reconnectDiscordClient(msg, _args) {
     msg.channel.send('Resetting...')
         .then(() => client.destroy())
         .then(() => login());
 }
 
-function exitProcess(msg, args) {
+function exitProcess(msg, _args) {
     const a = msg.author;
     console.info(`Shutdown request received from ${a.id} (${a.username}#${a.discriminator}.)`);
-    if (a.id != tokens.discord.ownerId)
-        return;
 
     console.log('Shutting down.');
     msg.channel.send(`Shutting down at the request of ${msg.author}.`)
