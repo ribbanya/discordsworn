@@ -47,6 +47,7 @@ function argHelpMsg(groups) {
         s = `${key}: `
         return array;
     }, []);
+    //TODO: Arg aliases, oracle tables
 }
 
 function parseCmdJson(json) {
@@ -88,9 +89,6 @@ function parseCmdJson(json) {
         }
         return true;
     };
-    const parseGroup = (cmdKey) => {
-
-    }
 
     const parseArgLabels = (key) => json[key].argLabels || null;
 
