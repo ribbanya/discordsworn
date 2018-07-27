@@ -273,7 +273,7 @@ function is_oracleLookupTable(msg, args) {
     const list = [];
     switch (oracle.type) {
         case null:
-            output += `**${value}**.`;
+            output += `${msg.author} **${value}**.`;
             break;
         case 'multipleColumns':
             output += `${msg.author} `;
