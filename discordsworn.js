@@ -13,7 +13,7 @@ const supportedCommands = [
 
 const supportedArgs = {
     [is_askTheOracle.name]: [
-        oracleLookupTable.name,
+        is_oracleLookupTable.name,
         '0',
         '10',
         '25',
@@ -26,6 +26,10 @@ const supportedArgs = {
 
 const prefixes = ['.']; //TODO user settings
 
+function syncParseJson(filename) {
+    return JSON.parse(fs.readFileSync(filename, 'utf8'))
+}
+
 const tokens = syncParseJson('tokens.json');
 const oracles = parseOraclesJson(syncParseJson('oracles.json'));
 
@@ -33,9 +37,22 @@ const cmdJson = parseCmdJson(syncParseJson('commands.json'));
 
 login();
 
+function formatArg(arg) {
+    return arg.toLowerCase().replace(/\s+/g, '-');
+}
+
+function argHelpMsg(groups) {
+    Object.keys(groups).reduce((array, key) => {
+        aliasStr = groups
+        s = `${key}: `
+        return array;
+    }, []);
+}
+
 function parseCmdJson(json) {
     const cmdJumps = {};
     const cmdData = {};
+    const cmdGroups = {}
 
     const isMissing = (array) => !array || array.length < 1;
     const keysIncludes = (object, key) => Object.keys(object).includes(key);
@@ -45,10 +62,14 @@ function parseCmdJson(json) {
             console.warn(
                 `Command ${cmdKey} is not supported. Skipping command.`
             );
-            return;
+            return false;
         }
-        const listener = supportedCommands[cmdKey];
+
         const aliases = json[cmdKey].aliases;
+        const listener = supportedCommands[cmdKey];
+
+        cmdGroups[cmdKey] = aliases;
+
         if (isMissing(aliases)) {
             console.warn(
                 `Command '${cmdKey}' does not have any aliases. ` +
@@ -61,10 +82,15 @@ function parseCmdJson(json) {
                     console.warn(`'${cmdKey}' is attempting to assign duplicate alias '${alias}'. Skipping.`);
                     return;
                 }
+                alias = formatArg(alias);
                 cmdJumps[alias] = listener;
             });
         }
+        return true;
     };
+    const parseGroup = (cmdKey) => {
+
+    }
 
     const parseArgLabels = (key) => json[key].argLabels || null;
 
@@ -91,7 +117,8 @@ function parseCmdJson(json) {
                     console.warn(`'${cmdKey}.${key}' is attempting to assign duplicate alias '${alias}'. Skipping.`);
                     return;
                 }
-                argJumps[alias] = key
+                alias = formatArg(alias);
+                argJumps[alias] = key;
             });
         });
         return argJumps;
@@ -112,7 +139,8 @@ function parseCmdJson(json) {
 
     return {
         cmdJumps: cmdJumps,
-        cmdData: cmdData
+        cmdData: cmdData,
+        cmdGroups: cmdGroups
     };
 }
 
@@ -128,7 +156,15 @@ function parseOraclesJson(json) {
             return;
         }
 
-        const mapOracle = (s) => json.map[s.toLowerCase().replace(/\s/, '-')] = oracle;
+        const mapOracle = (s) => {
+
+            if (json.map.hasOwnProperty(s)) {
+                console.warn(`Oracle '${oracle.title}' is attempting to assign duplicate alias '${s}'. Skipping.`);
+                return;
+            }
+            s = formatArg(s);
+            json.map[s] = oracle;
+        }
 
         mapOracle(oracle.title);
 
@@ -173,8 +209,8 @@ function is_askTheOracle(msg, args) {
         chan.send(invalidArgsMsg)
         return;
     }
-    if (matchArg(is_askTheOracle, args[0], oracleLookupTable)) {
-        oracleLookupTable(msg, args.slice(1));
+    if (matchArg(is_askTheOracle, args[0], is_oracleLookupTable)) {
+        is_oracleLookupTable(msg, args.slice(1));
         return;
     }
     const likelihood = args[0].toLowerCase();
@@ -201,9 +237,20 @@ function is_askTheOracle(msg, args) {
     chan.send(resultMsg);
 }
 
-function oracleLookupTable(msg, args) {
-    if (args.length < 1) return; //TODO: Send error
-    oracle = oracles.map[args[0]];
+function is_oracleLookupTable(msg, args) {
+    const oracleNotFoundMsg =
+        `Please specify an Oracle from the list:\n` +
+        Object.keys(oracles.map).map(s => '`' + s + '`').join(', ');
+    if (args.length < 1) {
+        msg.channel.send(`${msg.author} ${oracleNotFoundMsg}`);
+        return;
+    }
+    oracleName = args[0];
+    oracle = oracles.map[oracleName];
+    if (!oracle) {
+        msg.channel.send(`${msg.author} Oracle \`${oracleName}\` not found. ${oracleNotFoundMsg}`);
+        return;
+    }
     const roll = d(oracle.d ? oracle.d : 100);
     const key = Object.keys(oracle.results).find(k => k >= roll);
     msg.channel.send(`${roll}: ${oracle.results[key]}`);
@@ -306,8 +353,4 @@ function exitProcess(msg, args) {
     msg.channel.send(`Shutting down at the request of ${msg.author}.`)
         .then(() => client.destroy())
         .then(() => process.exit(0));
-}
-
-function syncParseJson(filename) {
-    return JSON.parse(fs.readFileSync(filename, 'utf8'))
 }
