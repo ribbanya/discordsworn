@@ -1,45 +1,16 @@
 {
     "is_askTheOracle": {
         "title": "Ask the Oracle",
-        "aliases": [
-            "ask",
-            "oracle",
-            "o"
-        ],
+        "aliases": ["ask", "oracle", "o"],
         "argAliases": {
-            "is_oracleLookupTable": [
-                "table",
-                "t"
-            ],
-            "0": [
-                "no-chance",
-                "nc",
-                "impossible"
-            ],
-            "10": [
-                "small-chance",
-                "sc"
-            ],
-            "25": [
-                "unlikely",
-                "ul"
-            ],
-            "50": [
-                "50-50",
-                "5050"
-            ],
-            "75": [
-                "likely",
-                "l"
-            ],
-            "90": [
-                "almost-certain",
-                "ac"
-            ],
-            "100": [
-                "certain",
-                "c"
-            ]
+            "is_oracleLookupTable": ["table", "t"],
+            "0": ["no-chance", "nc", "impossible"],
+            "10": ["small-chance", "sc"],
+            "25": ["unlikely", "ul"],
+            "50": ["50-50", "5050"],
+            "75": ["likely", "l"],
+            "90": ["almost-certain", "ac"],
+            "100": ["certain", "c"]
         },
         "argLabels": {
             "0": "impossible",
@@ -52,40 +23,24 @@
     },
     "is_rollActionDice": {
         "title": "Ironsworn Action Roll",
-        "aliases": [
-            "ironsworn-action",
-            "is",
-            "act",
-            "a"
-        ]
+        "aliases": ["ironsworn-action", "is", "act", "a"]
     },
     "aw_rollMoveDice": {
         "title": "Apocalypse World Move Roll",
-        "aliases": [
-            "apocalypse-world-move",
-            "aw-move",
-            "aw",
-            "pbta",
-            "pbta-move",
-            "move",
-            "m"
-        ]
+        "aliases": ["apocalypse-world-move", "aw-move", "aw", "pbta", "pbta-move", "move", "m"]
     },
     "reconnectDiscordClient": {
         "title": "Reconnect Client",
         "requiresOwner": true,
-        "aliases": [
-            "reset"
-        ]
+        "aliases": ["reset"]
     },
     "exitProcess": {
         "title": "Exit Process",
         "requiresOwner": true,
-        "aliases": [
-            "shutdown",
-            "sd",
-            "exit",
-            "x"
-        ]
+        "aliases": ["shutdown", "sd", "exit", "x"]
+    },
+    "helpMessage": {
+        "title": "Help",
+        "aliases": ["help", "h", "?"]
     }
 }
