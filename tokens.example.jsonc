@@ -1,0 +1,10 @@
+// Save this as `tokens.json` in your root directory!
+{
+    "discord": {
+        // The bot token. Get it from the Discord web interface.
+        "botAccount": "ng1plME7km3kltPH5es9Q66V.dKSR6e.3h2rfDCK7Atstx1poWAkmHBlrJX",
+
+        // Your owner ID. Use `msg.author.id` to find it. Used for admin commands.
+        "ownerId": "123456789012345678"
+    }
+}
