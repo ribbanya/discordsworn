@@ -6,7 +6,7 @@ const client = new discord.Client();
 const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
     aw_rollMoveDice,
-    reconnectDiscordClient, exitProcess
+    reconnectDiscordClient, exitProcess, helpMessage
 ].reduce((sc, fn) => {
     sc[fn.name] = fn;
     return sc;
@@ -272,30 +272,30 @@ function is_oracleLookupTable(msg, args) {
     let value = oracle.results[key];
     const list = [];
     switch (oracle.type) {
-        case null:
-            output += `${msg.author} **${value}**.`;
-            break;
-        case 'multipleColumns':
-            output += `${msg.author} `;
-            for (let i = 0; i < oracle.results[key].length; i++) {
-                let s = '';
-                if (oracle.headers && i < oracle.headers.length) {
-                    s += `${oracle.headers[i]}: `;
-                }
-                s += `**${value[i]}**.`;
-                list.push(s);
+    case null:
+        output += `${msg.author} **${value}**.`;
+        break;
+    case 'multipleColumns':
+        output += `${msg.author} `;
+        for (let i = 0; i < oracle.results[key].length; i++) {
+            let s = '';
+            if (oracle.headers && i < oracle.headers.length) {
+                s += `${oracle.headers[i]}: `;
             }
-            output += list.join(' ');
-            break;
-        case 'nested':
-            roll = d(value.d ? value.d : 100); //TODO: Accept nested "d"
-            output += `    **${value.title}** vs. **${roll}**…\n`;
-            key = lookup(value.results, roll);
-            output += `    _${value.prompt}_\n` +
-                `${msg.author} **${value.results[key]}**.`;
-            break;
-        default:
-            console.error(`Oracle '${oracle.title}' has unsupported type '${oracle.type}'.`);
+            s += `**${value[i]}**.`;
+            list.push(s);
+        }
+        output += list.join(' ');
+        break;
+    case 'nested':
+        roll = d(value.d ? value.d : 100); //TODO: Accept nested "d"
+        output += `    **${value.title}** vs. **${roll}**…\n`;
+        key = lookup(value.results, roll);
+        output += `    _${value.prompt}_\n` +
+            `${msg.author} **${value.results[key]}**.`;
+        break;
+    default:
+        console.error(`Oracle '${oracle.title}' has unsupported type '${oracle.type}'.`);
     }
     msg.channel.send(output);
 }
@@ -395,4 +395,8 @@ function exitProcess(msg, _args) {
     msg.channel.send(`Shutting down at the request of ${msg.author}.`)
         .then(() => client.destroy())
         .then(() => process.exit(0));
+}
+
+function helpMessage(msg, _args) {
+
 }

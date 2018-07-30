@@ -1,6 +1,18 @@
 {
+    "helpMessage": {
+        "title": "Help",
+        "description": "This message.",
+
+        "aliases": ["help", "h", "?"]
+    },
+    "is_rollActionDice": {
+        "title": "Ironsworn Action Roll",
+        "aliases": ["a", "is", "act"]
+    },
     "is_askTheOracle": {
         "title": "Ask the Oracle",
+        "description": "_Ask the Oracle_ for inspiration.",
+        "helpText": "**__Ask the Oracle__**\n`.(oracle|o|ask) (<0-100>|<odds>|table|t) ([<description>]|<table-name>)`\n_Ask the Oracle_ for inspiration.\n`(<0-100>|odds)` - For a Yes/No outcome, specify a whole number between 0-100, or one of the following:\n    `(certain|c)` - Certain (100%)\n    `(almost-certain|ac)` - Almost Certain (90%)\n    `(likely|l)` - Likely (75%)\n    `(50-50|5050)` - 50-50 (50%)\n    `(unlikely|ul)` - Unlikely (25%)\n`<description>` - An optional description, containing any text, may follow a yes/no command. You can use it to indicate what question you are asking the Oracle.\n`(table|t)` - Consult one of the tables by specifying its name (below).\n`table-name` - Choose one of the following to consult its corresponding Oracle:\n    `(action|a)` - Action\n    `(theme|t)` - Theme\n    `(region|r)` - Region\n    `(location|l)` - Location\n    `(coastal-waters-location|cwl)` - Coastal Waters Location\n    `(location-descriptor|ld)` - Location Descriptors\n    `(settlement-name|s|sn)` - Settlement Names\n    `(quick-settlement-names|qs|qsn)` - Quick Settlement Names\n    `(settlement-trouble|st)` - Settlement Trouble\n    `(npc-roles|nr|npcr)` - NPC Roles\n    `(goals|g)` - Goals\n    `(npc-descriptors|nd|npcd)` - NPC Descriptors\n    `(ironlander-names|in|iln)` - Ironlander Names\n    `(elf-names|en)` - Elf Names\n    `(other-names|on)` - Other Names\n    `(combat-actions|ca)` - Combat Actions\n    `(mystic-backlash|mb)` - Mystic Backlash\n    `(major-plot-twist|mpt)` - Major Plot Twist\n    `(challenge-rank|cr)` - Challenge Rank",
         "aliases": ["ask", "oracle", "o"],
         "argAliases": {
             "is_oracleLookupTable": ["table", "t"],
@@ -21,10 +33,6 @@
             "90": "almost certain"
         }
     },
-    "is_rollActionDice": {
-        "title": "Ironsworn Action Roll",
-        "aliases": ["ironsworn-action", "is", "act", "a"]
-    },
     "aw_rollMoveDice": {
         "title": "Apocalypse World Move Roll",
         "aliases": ["apocalypse-world-move", "aw-move", "aw", "pbta", "pbta-move", "move", "m"]
@@ -38,9 +46,5 @@
         "title": "Exit Process",
         "requiresOwner": true,
         "aliases": ["shutdown", "sd", "exit", "x"]
-    },
-    "helpMessage": {
-        "title": "Help",
-        "aliases": ["help", "h", "?"]
     }
 }
