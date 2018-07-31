@@ -1,6 +1,6 @@
 **__Ask the Oracle__**
 `.(oracle|o|ask) (<0-100>|<odds>|table|t) ([<description>]|<table-name>)`
-_Ask the Oracle_ for inspiration.
+_Asks the Oracle_ for inspiration.
 
 `(<0-100>|odds)` - For a Yes/No outcome, specify a whole number between 0-100, or one of the following:
     `(certain|c)` - Certain (100%)
@@ -44,7 +44,7 @@ Examples:
 
 **__Ironsworn Action Roll__**
 `.(ironsworn-action-roll|a|is|act) (<modifier>|<description>)...`
-Perform an Action Roll from the *Ironsworn* engine.
+Performs an Action Roll from the *Ironsworn* engine.
 
 `<modifier>` - Any positive or negative whole number. Modifiers will be added together and displayed separately in the result, then added to the Action Die.
 
@@ -53,9 +53,31 @@ Perform an Action Roll from the *Ironsworn* engine.
 `...` - Modifiers and descriptions can be chained together in any order and any number of times, so long as there is space between each modifier and any other text.
 
 Examples:
-```.ironsworn-action Rolling to Compel the guard to let me pass, telling him I have business with the Prince. 2 +shadow 1 for my Secure Advantage.
+```.ironsworn-action Rolling to Compel the guard to let me pass by telling him I have business with the Prince. 2 +shadow 1 for my Secure Advantage.
 
 .is Compelling the guard by lying 2 +shadow 1 Secure Advantage
-.act Compel 2 +shadow 1 SA
 .a 2 1
 ```
+
+**__Apocalypse World Move Roll__**
+`.(apocalypse-world-move|m|aw) (<modifier>|<description>)...`
+Performs a Move roll from the *Apocalypse World* engine.
+
+`<modifier>` - Any positive or negative whole number. Modifiers will be added together and displayed separately in the result, then added to the Action Die.
+
+`<description>` - Any text. Can be used to describe what the modifiers are, what the roll is, etc.
+
+`...` - Modifiers and descriptions can be chained together in any order and any number of times, so long as there is space between each modifier and any other text.
+
+Examples:
+```.apocalypse-world-move Rolling to Manipulate the guard to let me pass by telling him I have business with the gang leader. 2 +hot 1 +Forward
+
+.aw Manipulating the guard by lying 2 +hot 1 +Forward
+.m 2 1
+```
+
+**__Help__**
+`.(help|h|?) [<command-name>|<command-alias>]`
+Displays help for Discordsworn commands.
+
+`(help|<no parameters>)

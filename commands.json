@@ -1,18 +1,20 @@
 {
     "helpMessage": {
         "title": "Help",
-        "description": "This message.",
+        "description": "Explains usage of each command.",
 
-        "aliases": ["help", "h", "?"]
+        "aliases": ["help", "h", "?", "man"]
     },
     "is_rollActionDice": {
         "title": "Ironsworn Action Roll",
-        "aliases": ["a", "is", "act"]
+        "description": "Performs an Action Roll from the *Ironsworn* engine.",
+        "helpText": "**__Ironsworn Action Roll__**\n`.(ironsworn-action-roll|a|is|act) (<modifier>|<description>)...`\nPerforms an Action Roll from the *Ironsworn* engine.\n`<modifier>` - Any positive or negative whole number. Modifiers will be added together and displayed separately in the result, then added to the Action Die.\n`<description>` - Any text. Can be used to describe what the modifiers are, what the roll is, etc.\n`...` - Modifiers and descriptions can be chained together in any order and any number of times, so long as there is space between each modifier and any other text.\nExamples:\n```.ironsworn-action Rolling to Compel the guard to let me pass by telling him I have business with the Prince. 2 +shadow 1 for my Secure Advantage.\n.is Compelling the guard by lying 2 +shadow 1 Secure Advantage\n.a 2 1\n```",
+        "aliases": ["ironsworn-action", "a", "is"]
     },
     "is_askTheOracle": {
         "title": "Ask the Oracle",
-        "description": "_Ask the Oracle_ for inspiration.",
-        "helpText": "**__Ask the Oracle__**\n`.(oracle|o|ask) (<0-100>|<odds>|table|t) ([<description>]|<table-name>)`\n_Ask the Oracle_ for inspiration.\n`(<0-100>|odds)` - For a Yes/No outcome, specify a whole number between 0-100, or one of the following:\n    `(certain|c)` - Certain (100%)\n    `(almost-certain|ac)` - Almost Certain (90%)\n    `(likely|l)` - Likely (75%)\n    `(50-50|5050)` - 50-50 (50%)\n    `(unlikely|ul)` - Unlikely (25%)\n`<description>` - An optional description, containing any text, may follow a yes/no command. You can use it to indicate what question you are asking the Oracle.\n`(table|t)` - Consult one of the tables by specifying its name (below).\n`table-name` - Choose one of the following to consult its corresponding Oracle:\n    `(action|a)` - Action\n    `(theme|t)` - Theme\n    `(region|r)` - Region\n    `(location|l)` - Location\n    `(coastal-waters-location|cwl)` - Coastal Waters Location\n    `(location-descriptor|ld)` - Location Descriptors\n    `(settlement-name|s|sn)` - Settlement Names\n    `(quick-settlement-names|qs|qsn)` - Quick Settlement Names\n    `(settlement-trouble|st)` - Settlement Trouble\n    `(npc-roles|nr|npcr)` - NPC Roles\n    `(goals|g)` - Goals\n    `(npc-descriptors|nd|npcd)` - NPC Descriptors\n    `(ironlander-names|in|iln)` - Ironlander Names\n    `(elf-names|en)` - Elf Names\n    `(other-names|on)` - Other Names\n    `(combat-actions|ca)` - Combat Actions\n    `(mystic-backlash|mb)` - Mystic Backlash\n    `(major-plot-twist|mpt)` - Major Plot Twist\n    `(challenge-rank|cr)` - Challenge Rank",
+        "description": "_Asks the Oracle_ for inspiration.",
+        "helpText": "**__Ask the Oracle__**\n`.(oracle|o|ask) (<0-100>|<odds>|table|t) ([<description>]|<table-name>)`\n_Asks the Oracle_ for inspiration.\n`(<0-100>|odds)` - For a Yes/No outcome, specify a whole number between 0-100, or one of the following:\n    `(certain|c)` - Certain (100%)\n    `(almost-certain|ac)` - Almost Certain (90%)\n    `(likely|l)` - Likely (75%)\n    `(50-50|5050)` - 50-50 (50%)\n    `(unlikely|ul)` - Unlikely (25%)\n`<description>` - An optional description, containing any text, may follow a yes/no command. You can use it to indicate what question you are asking the Oracle.\n`(table|t)` - Consult one of the tables by specifying its name (below).\n`table-name` - Choose one of the following to consult its corresponding Oracle:\n    `(action|a)` - Action\n    `(theme|t)` - Theme\n    `(region|r)` - Region\n    `(location|l)` - Location\n    `(coastal-waters-location|cwl)` - Coastal Waters Location\n    `(location-descriptor|ld)` - Location Descriptors\n    `(settlement-name|s|sn)` - Settlement Names\n    `(quick-settlement-names|qs|qsn)` - Quick Settlement Names\n    `(settlement-trouble|st)` - Settlement Trouble\n    `(npc-roles|nr|npcr)` - NPC Roles\n    `(goals|g)` - Goals\n    `(npc-descriptors|nd|npcd)` - NPC Descriptors\n    `(ironlander-names|in|iln)` - Ironlander Names\n    `(elf-names|en)` - Elf Names\n    `(other-names|on)` - Other Names\n    `(combat-actions|ca)` - Combat Actions\n    `(mystic-backlash|mb)` - Mystic Backlash\n    `(major-plot-twist|mpt)` - Major Plot Twist\n    `(challenge-rank|cr)` - Challenge Rank\nExamples:\n```.oracle unlikely Will this work?\n.ask ul Will this work?\n.o 25\n.oracle table elf-names\n.o t en```\n",
         "aliases": ["ask", "oracle", "o"],
         "argAliases": {
             "is_oracleLookupTable": ["table", "t"],
@@ -35,16 +37,20 @@
     },
     "aw_rollMoveDice": {
         "title": "Apocalypse World Move Roll",
-        "aliases": ["apocalypse-world-move", "aw-move", "aw", "pbta", "pbta-move", "move", "m"]
+        "description": "Performs a Move roll from the *Apocalypse World* engine.",
+        "helpText": "**__Apocalypse World Move Roll__**\n`.(apocalypse-world-move|m|aw) (<modifier>|<description>)...`\nPerforms a Move roll from the *Apocalypse World* engine.\n`<modifier>` - Any positive or negative whole number. Modifiers will be added together and displayed separately in the result, then added to the Action Die.\n`<description>` - Any text. Can be used to describe what the modifiers are, what the roll is, etc.\n`...` - Modifiers and descriptions can be chained together in any order and any number of times, so long as there is space between each modifier and any other text.\nExamples:\n```.apocalypse-world-move Rolling to Manipulate the guard to let me pass by telling him I have business with the gang leader. 2 +hot 1 +Forward\n.aw Manipulating the guard by lying 2 +hot 1 +Forward\n.m 2 1\n```",
+        "aliases": ["apocalypse-world-move", "m", "aw"]
     },
     "reconnectDiscordClient": {
         "title": "Reconnect Client",
+        "description": "Severs the connection to Discord, then reopens it.",
         "requiresOwner": true,
         "aliases": ["reset"]
     },
     "exitProcess": {
         "title": "Exit Process",
+        "description": "Shuts down the connection to Discord, then exits the script.",
         "requiresOwner": true,
-        "aliases": ["shutdown", "sd", "exit", "x"]
+        "aliases": ["shutdown"]
     }
 }

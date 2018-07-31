@@ -1,12 +1,13 @@
 ﻿const discord = require('discord.js');
 const fs = require('fs');
+const dateFormat = require('dateformat');
 
 const client = new discord.Client();
 
 const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
     aw_rollMoveDice,
-    reconnectDiscordClient, exitProcess, helpMessage
+    reconnectDiscordClient, exitProcess
 ].reduce((sc, fn) => {
     sc[fn.name] = fn;
     return sc;
@@ -184,14 +185,41 @@ client.on('ready', () => {
 });
 
 client.on('message', (msg) => {
-    const args = msg.content.split(' ');
-    if (!prefixes.find(s => msg.content.startsWith(s)))
-        return;
-    const cmd = args[0].substring(1).toLowerCase();
+    if (msg.author.id === client.user.id) return;
+
+    const mention = new RegExp(`<@.?${client.user.id}>`, 'g');
+
+    let content = msg.content.replace(mention, '')
+        .replace(/ {2,}/, ' ').trim();
+
+    const hasPrefix = prefixes.find((prefix) => {
+        if (content.startsWith(prefix)) {
+            content = content.substring(prefix.length);
+            return true;
+        }
+        return false;
+    });
+    const relevant = hasPrefix ||
+        msg.isMentioned(client.user) ||
+        msg.channel instanceof discord.DMChannel;
+
+    if (!relevant) return;
+
+
+
+
+    const args = content.split(' ');
+    const cmd = args[0].toLowerCase();
     const cmdKey = cmdJson.cmdJumps[cmd];
     if (!cmdKey) {
-        msg.channel.send(`${msg.author} Unrecognized command \`${cmd}\`.`);
+        // msg.channel.send(`${msg.author} Unrecognized command \`${cmd}\`.`);
         return;
+    }
+
+    {
+        const date = dateFormat(Date.now(), 'mm/dd/yy HH:MM:ss');
+        const user = `${msg.author.username}#${msg.author.discriminator}`;
+        console.info(`[${date}] ${user} (${msg.channel.type}): ${msg.content}`);
     }
 
     if (cmdJson.cmdData[cmdKey.name].requiresOwner &&
@@ -200,7 +228,9 @@ client.on('message', (msg) => {
         return;
     }
     try {
+        msg.content = content;
         (cmdKey)(msg, args.slice(1));
+        return;
     } catch (error) {
         msg.channel.send(`${msg.author} Error: ${error.message}.`);
         console.error(`Error encountered while handling '${msg.content}':`, error);
@@ -258,7 +288,7 @@ function is_oracleLookupTable(msg, args) {
         msg.channel.send(`${msg.author} ${oracleNotFoundMsg}`);
         return;
     }
-    const oracleName = args[0];
+    const oracleName = args[0].toLowerCase();
     const oracle = oracles.map[oracleName];
     if (!oracle) {
         msg.channel.send(`${msg.author} Oracle \`${oracleName}\` not found. ${oracleNotFoundMsg}`);
@@ -301,7 +331,7 @@ function is_oracleLookupTable(msg, args) {
 }
 
 function resolveArg(cmdFn, argAlias) {
-    return cmdJson.cmdData[cmdFn.name].argJumps[argAlias];
+    return cmdJson.cmdData[cmdFn.name].argJumps[argAlias.toLowerCase()];
 }
 
 function matchArg(cmdFn, argAlias, argFn) {

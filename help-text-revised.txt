@@ -1,0 +1,30 @@
+**__Ask the Oracle__**
+_Asks the Oracle_ for inspiration.
+
+__Yes/No Questions__
+To _Ask_ a Yes/No question, start with the `oracle` command and then an Odds keyword. Then, optionally, add a description:
+```.oracle unlikely Will this work?```
+_Ask_ the same question, but with a different command name and abbreviated Odds keyword:
+```.ask ul Will this work?```
+_Ask_ the same question, but with no description, the shortest command name, and the numeric equivalent of the Unlikely keyword (25%):
+```.o 25```
+
+__Tables__
+To consult an _Oracle_ table, start with the `oracle` command, then the word `table`, then the keyword for the table you wish to consult:
+```.oracle table elf-names```
+You can abbreviate `oracle` and `table` to `o` and `t`, respectively, and each table has its own shorthand:
+```.o t en```
+_Table Names:_
+    __A__ction, __T__heme, __R__egion, __L__ocation, __C__oastal __W__aters __L__ocation, __L__ocation __D__escriptors, __S__ettlement __N__ames, __Q__uick __S__ettlement __N__ames, __S__ettlement __T__rouble, __N__PC __R__oles, __G__oals, __N__PC __D__escriptors, __I__ronlander __N__ames, __E__lf __N__ames, __O__ther __N__ames, __C__ombat __A__ctions, __M__ystic __B__acklash, __M__ajor __P__lot __T__wist, __C__hallenge __R__ank
+
+ Underlined letters indicate the abbreviation for a table: `cwl`
+ When specifying tables with multiple words, replace spaces with dashes: `coastal-waters-location`
+
+Terms can be lowercase, but need not be:
+```.ORACLE TABLE Coastal-Waters-Location```
+
+**__Ironsworn Action Roll__**
+
+**__Apocalypse World Move Roll__**
+
+**__Help__**
