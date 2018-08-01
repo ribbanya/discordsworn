@@ -10,7 +10,7 @@ const supportedCommands = [
 ].reduce((sc, fn) => {
     sc[fn.name] = fn;
     return sc;
-}, {}); //TODO separate module
+}, {});
 
 const supportedArgs = {
     [is_askTheOracle.name]: [
@@ -151,33 +151,75 @@ function parseCmdJson(json) {
 
 function parseOraclesJson(json) {
     json.map = {};
-    for (let i = 0; i < json.length; i++) {
+    root: for (let i = 0; i < json.length; i++) {
         const oracle = json[i];
-        if (!oracle.title) {
-            console.warn(`Oracle at index ${i} is missing a title field. Skipping.`);
-            continue;
-        }
         oracle.type = oracle.type || null;
-        if (!supportedOracles.includes(oracle.type)) {
-            console.warn(`Oracle "${oracle.title}"'s type '${oracle.type}' is not supported. Skipping.`);
+        let identifier = `Oracle at index ${i}`;
+        const warn = (s) => console.warn(`${identifier}` + s + ' Skipping.');
+        {
+            if (!oracle.title) {
+                warn(' is missing a title field.');
+                continue;
+            }
+
+            identifier = `Oracle '${oracle.title}' at index ${i}`;
+
+            if (!supportedOracles.includes(oracle.type)) {
+                warn(`'s type '${oracle.type}' is not supported.`);
+                continue;
+            }
+
+            {
+                let results = oracle.results;
+                const d = oracle.d;
+                const keys = Object.keys(results);
+                for (let i = 0, previous = 0; i < keys.length; i++) {
+                    const keyIdentifier = identifier + `'s results key '${key}'`;
+                    const key = parseInt(keys[i]);
+                    if (!key) {
+                        warn(`${keyIdentifier} is not an integer`);
+                        continue root;
+                    }
+                    if (key <= previous) {
+                        warn(`${keyIdentifier} is not sorted.`)
+                        continue root;
+                    }
+                    previous = key;
+                }
+            };
+
+            let valid = results &&
+                typeof results === 'object';
+            if (!valid) {
+                warn(' does not have any results.');
+                continue;
+            }
+        }
+        if (!oracle.aliases || oracle.aliases instanceof Array) {
+            console.warn(`${identifier} has an 'aliases' definition but it is not an Array. Skipping.`);
             continue;
         }
-        const mapOracle = (s) => {
-            if (json.map.hasOwnProperty(s)) {
-                console.warn(`Oracle '${oracle.title}' is attempting to assign duplicate alias '${s}'. Skipping.`);
-                return;
-            }
-            s = formatArg(s);
-            json.map[s] = oracle;
-        };
+    }
+    const mapOracle = (s) => {
+        if (json.map.hasOwnProperty(s)) {
+            console.warn(`${identifier} is attempting to assign duplicate alias '${s}'. Skipping.`);
+            return;
+        }
+        s = formatArg(s);
+        json.map[s] = oracle;
+    };
 
+    mapOracle(oracle.title);
+
+    if (!oracle.aliases) {
+        console.info(`${identifier} does not have any aliases. Using automatic alias '${formatArg(oracle.title)} instead.`);
         mapOracle(oracle.title);
-
-        if (!oracle.aliases) continue;
+    } else {
         oracle.aliases.forEach(e => mapOracle(e));
     }
     return json;
 }
+
 
 client.on('ready', () => {
     console.log('Ready.');
@@ -272,30 +314,30 @@ function is_oracleLookupTable(msg, args) {
     let value = oracle.results[key];
     const list = [];
     switch (oracle.type) {
-        case null:
-            output += `${msg.author} **${value}**.`;
-            break;
-        case 'multipleColumns':
-            output += `${msg.author} `;
-            for (let i = 0; i < oracle.results[key].length; i++) {
-                let s = '';
-                if (oracle.headers && i < oracle.headers.length) {
-                    s += `${oracle.headers[i]}: `;
-                }
-                s += `**${value[i]}**.`;
-                list.push(s);
+    case null:
+        output += `${msg.author} **${value}**.`;
+        break;
+    case 'multipleColumns':
+        output += `${msg.author} `;
+        for (let i = 0; i < oracle.results[key].length; i++) {
+            let s = '';
+            if (oracle.headers && i < oracle.headers.length) {
+                s += `${oracle.headers[i]}: `;
             }
-            output += list.join(' ');
-            break;
-        case 'nested':
-            roll = d(value.d ? value.d : 100); //TODO: Accept nested "d"
-            output += `    **${value.title}** vs. **${roll}**…\n`;
-            key = lookup(value.results, roll);
-            output += `    _${value.prompt}_\n` +
-                `${msg.author} **${value.results[key]}**.`;
-            break;
-        default:
-            console.error(`Oracle '${oracle.title}' has unsupported type '${oracle.type}'.`);
+            s += `**${value[i]}**.`;
+            list.push(s);
+        }
+        output += list.join(' ');
+        break;
+    case 'nested':
+        roll = d(value.d ? value.d : 100); //TODO: Accept nested "d"
+        output += `    **${value.title}** vs. **${roll}**…\n`;
+        key = lookup(value.results, roll);
+        output += `    _${value.prompt}_\n` +
+            `${msg.author} **${value.results[key]}**.`;
+        break;
+    default:
+        console.error(`Oracle '${oracle.title}' has unsupported type '${oracle.type}'.`);
     }
     msg.channel.send(output);
 }
