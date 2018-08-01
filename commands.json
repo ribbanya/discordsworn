@@ -21,7 +21,7 @@
             "0": ["no-chance", "nc", "impossible"],
             "10": ["small-chance", "sc"],
             "25": ["unlikely", "ul"],
-            "50": ["50-50", "5050"],
+            "50": ["50-50", "5050", "fifty-fifty", "f"],
             "75": ["likely", "l"],
             "90": ["almost-certain", "ac"],
             "100": ["certain", "c"]
