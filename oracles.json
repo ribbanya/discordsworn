@@ -1233,5 +1233,51 @@
             "93": "Extreme",
             "100": "Epic"
         }
+    },
+    {
+        "title": "Inciting Situations",
+        "aliases": ["is"],
+        "results": {
+            "5": "Roll again, but the situation is dire.",
+            "16": "Why are \\_\\_\\_ and \\_\\_\\_ fighting right now?",
+            "27": "\\_\\_\\_ enters the scene. How does this complicate things?",
+            "38": "What is \\_\\_\\_ coercing \\_\\_\\_ into?",
+            "46": "By whom is \\_\\_\\_ being chased, and why?",
+            "54": "What perilous situation is \\_\\_\\_ escaping right now?",
+            "62": "What awkward social situation is \\_\\_\\_ currently caught in?",
+            "70": "What is \\_\\_\\_ here to collect from \\_\\_\\_?",
+            "75": "\\_\\_\\_ is dying and \\_\\_\\_ is there. What happened?",
+            "80": "What trap has \\_\\_\\_ sprung, and who set it?",
+            "85": "To whom is \\_\\_\\_ tearfully or angrily apologizing right now?",
+            "90": "\\_\\_\\_ and \\_\\_\\_ are at a standstill. What happened?",
+            "95": "What has \\_\\_\\_ done to betray \\_\\_\\_?",
+            "100": "Roll twice on this table."
+        }
+    },
+    {
+        "title": "Gender Presentation and Identity",
+        "aliases": ["gpi"],
+        "results": {
+            "5": "Masculine cis man (he/him)",
+            "10": "Feminine cis woman (she/her)",
+            "15": "Androgynous cis man (he/him)",
+            "20": "Androgynous cis woman (she/her)",
+            "25": "Feminine cis man (he/him)",
+            "30": "Femme trans woman (she/her)",
+            "35": "Butch cis woman (she/her)",
+            "40": "Masculine trans man (he/him)",
+            "45": "Butch trans woman (she/her)",
+            "50": "Feminine trans man (he/him)",
+            "55": "Androgynous trans woman (she/her)",
+            "60": "Androgynous trans man (he/him)",
+            "65": "Androgynous agender person (they/them)",
+            "70": "Cis drag queen (he/him, sometimes she/her)",
+            "75": "Cis drag king (she/her, sometimes he/him)",
+            "80": "Femme agender person (they/them)",
+            "85": "Masculine agender person (they/them)",
+            "90": "Genderfluid person (he or she or they)",
+            "95": "Genderqueer person (he or she or they or other)",
+            "100": "Questioning"
+        }
     }
 ]
