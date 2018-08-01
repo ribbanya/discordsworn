@@ -43,7 +43,7 @@ Examples:
 .o t en```
 
 **__Ironsworn Action Roll__**
-`.(ironsworn-action-roll|a|is|act) (<modifier>|<description>)...`
+`.(ironsworn-action|a|is|act) (<modifier>|<description>)...`
 Performs an Action Roll from the *Ironsworn* engine.
 
 `<modifier>` - Any positive or negative whole number. Modifiers will be added together and displayed separately in the result, then added to the Action Die.
