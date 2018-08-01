@@ -3,6 +3,8 @@ const fs = require('fs');
 const dateFormat = require('dateformat');
 
 const client = new discord.Client();
+client.on('ready', () => console.log('Ready.'));
+client.on('message', onMsg);
 
 const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
@@ -180,38 +182,34 @@ function parseOraclesJson(json) {
     return json;
 }
 
-client.on('ready', () => {
-    console.log('Ready.');
-});
 
-client.on('message', (msg) => {
+function onMsg(msg) {
     if (msg.author.id === client.user.id) return;
 
     const mention = new RegExp(`<@.?${client.user.id}>`, 'g');
-
     let content = msg.content.replace(mention, '')
         .replace(/ {2,}/, ' ').trim();
 
-    const hasPrefix = prefixes.find((prefix) => {
-        if (content.startsWith(prefix)) {
-            content = content.substring(prefix.length);
-            return true;
-        }
-        return false;
-    });
-    const relevant = hasPrefix ||
-        msg.isMentioned(client.user) ||
-        msg.channel instanceof discord.DMChannel;
+    {
+        const hasPrefix = prefixes.find((prefix) => {
+            if (content.startsWith(prefix)) {
+                content = content.substring(prefix.length);
+                return true;
+            }
+            return false;
+        });
+        const relevant = hasPrefix ||
+            msg.isMentioned(client.user) ||
+            msg.channel instanceof discord.DMChannel;
 
-    if (!relevant) return;
-
-
-
+        if (!relevant) return;
+    }
 
     const args = content.split(' ');
     const cmd = args[0].toLowerCase();
-    const cmdKey = cmdJson.cmdJumps[cmd];
-    if (!cmdKey) {
+    const cmdFn = cmdJson.cmdJumps[cmd];
+
+    if (!cmdFn) {
         // msg.channel.send(`${msg.author} Unrecognized command \`${cmd}\`.`);
         return;
     }
@@ -222,20 +220,21 @@ client.on('message', (msg) => {
         console.info(`[${date}] ${user} (${msg.channel.type}): ${msg.content}`);
     }
 
-    if (cmdJson.cmdData[cmdKey.name].requiresOwner &&
+    if (cmdJson.cmdData[cmdFn.name].requiresOwner &&
         msg.author.id != tokens.discord.ownerId) {
         msg.channel.send(`${msg.author} You don't have permission to do that!`);
         return;
     }
+
     try {
         msg.content = content;
-        (cmdKey)(msg, args.slice(1));
+        (cmdFn)(msg, args.slice(1));
         return;
     } catch (error) {
         msg.channel.send(`${msg.author} Error: ${error.message}.`);
         console.error(`Error encountered while handling '${msg.content}':`, error);
     }
-});
+}
 
 function is_askTheOracle(msg, args) {
     const chan = msg.channel;
