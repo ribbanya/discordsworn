@@ -2,13 +2,16 @@
 const fs = require('fs');
 const dateFormat = require('dateformat');
 
-const client = new discord.Client();
-client.on('ready', () => console.log('Ready.'));
-client.on('message', onMsg);
+const client = new discord.Client(); {
+    client.on('ready', () => console.log('Ready.'));
+    client.on('message', onMsg);
+    client.on('error', (error) => console.error(error));
+}
 
 const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
     aw_rollMoveDice,
+    helpMessage,
     reconnectDiscordClient, exitProcess
 ].reduce((sc, fn) => {
     sc[fn.name] = fn;
@@ -54,8 +57,6 @@ function formatArgList(argList) {
 function parseCmdJson(json) {
     const cmdJumps = {};
     const cmdData = {};
-    const cmdGroups = {};
-    const cmdHelp = {};
 
     const isMissing = (array) => !array || array.length < 1;
     const keysIncludes = (object, key) => Object.keys(object).includes(key);
@@ -64,8 +65,6 @@ function parseCmdJson(json) {
 
         const aliases = json[cmdKey].aliases;
         const listener = supportedCommands[cmdKey];
-
-        cmdGroups[cmdKey] = aliases;
 
         if (isMissing(aliases)) {
             console.warn(
@@ -87,11 +86,6 @@ function parseCmdJson(json) {
 
     const parseArgLabels = (cmdKey) => json[cmdKey].argLabels || null;
 
-    const parseHelp = (cmdKey) => {
-        const aliases = json[cmdKey].aliases;
-        if (isMissing(aliases)) return;
-        cmdHelp[cmdKey] = `${cmdKey}: ${formatArgList(aliases)}`;
-    };
     const parseArgJumps = (cmdKey) => {
         const group = json[cmdKey].argAliases;
 
@@ -131,23 +125,25 @@ function parseCmdJson(json) {
             return;
         }
         parseJumps(cmdKey);
-        parseHelp(cmdKey);
         const argJumps = parseArgJumps(cmdKey);
         const argLabels = parseArgLabels(cmdKey);
-        if (argJumps || argLabels || cmd.title || cmd.requiresOwner) {
+        if (argJumps || argLabels || !isMissing(cmd.aliases) ||
+            cmd.title || cmd.helpText || cmd.description ||
+            cmd.requiresOwner) {
             cmdData[cmdKey] = {};
             const data = cmdData[cmdKey];
             if (argJumps) data.argJumps = argJumps;
             if (argLabels) data.argLabels = argLabels;
+            if (!isMissing(cmd.aliases)) data.aliases = cmd.aliases;
             if (cmd.title) data.title = cmd.title;
+            if (cmd.helpText) data.helpText = cmd.helpText;
+            if (cmd.description) data.description = cmd.description;
             if (cmd.requiresOwner) data.requiresOwner = cmd.requiresOwner;
         }
     });
 
     return {
         cmdData: cmdData,
-        cmdGroups: cmdGroups,
-        cmdHelp: cmdHelp,
         cmdJumps: cmdJumps
     };
 }
@@ -426,6 +422,67 @@ function exitProcess(msg, _args) {
         .then(() => process.exit(0));
 }
 
-function helpMessage(msg, _args) {
 
+const helpSymbols = (() => {
+    const symbols = {
+        helpList: (msg) => {
+            return Object.keys(cmdJson.cmdData).reduce((s, cmdKey) => {
+                // if (cmdKey === helpMessage.name) return s;
+
+                const cmd = cmdJson.cmdData[cmdKey];
+
+                let marker = '';
+                if (cmd.requiresOwner) {
+                    if (!isOwner(msg.author))
+                        return s;
+
+                    marker = '&';
+                }
+                const aliases = cmd.aliases.map(alias => '`' + alias + '`').join(', ');
+                if (s) s += '\n\n';
+                return s + `${aliases}\n${marker}**${cmd.title}**\n    ${cmd.description}`;
+            }, '');
+        },
+        selfPing: (_msg) => client.user.toString()
+
+    };
+
+    return Object.keys(symbols).reduce((result, key) => {
+        const regexp = new RegExp('\\${' + key + '}', 'gm');
+        result.push({
+            regexp: regexp,
+            function: symbols[key]
+        });
+        return result;
+    }, []);
+})();
+
+function helpMessage(msg, args) {
+    let helpFn = args && args.length > 0 ?
+        cmdJson.cmdJumps[args[0]] : helpMessage;
+
+    let output = `${msg.author}`;
+
+    if (!helpFn) {
+        output += ` Command \`${args[0]}\` not recognized.`;
+        helpFn = helpMessage;
+    }
+
+    let helpText = cmdJson.cmdData[helpFn.name].helpText;
+    if (!helpText) helpText = '_(No documentation)_';
+
+
+    helpSymbols.forEach(symbol => {
+        if (!symbol.regexp.test(helpText)) return;
+        const result = symbol['function'](msg);
+        helpText = helpText.replace(symbol.regexp, result);
+    });
+
+    output += '\n' + helpText;
+
+    msg.channel.send(output);
+}
+
+function isOwner(user) {
+    return user.id === tokens.discord.ownerId;
 }
