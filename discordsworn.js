@@ -1,16 +1,22 @@
 ﻿const discord = require('discord.js');
 const fs = require('fs');
+const dateFormat = require('dateformat');
 
-const client = new discord.Client();
+const client = new discord.Client(); {
+    client.on('ready', () => console.log('Ready.'));
+    client.on('message', onMsg);
+    client.on('error', (error) => console.error(error));
+}
 
 const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
     aw_rollMoveDice,
+    helpMessage,
     reconnectDiscordClient, exitProcess
 ].reduce((sc, fn) => {
     sc[fn.name] = fn;
     return sc;
-}, {});
+}, {}); //TODO separate module
 
 const supportedArgs = {
     [is_askTheOracle.name]: [
@@ -51,8 +57,6 @@ function formatArgList(argList) {
 function parseCmdJson(json) {
     const cmdJumps = {};
     const cmdData = {};
-    const cmdGroups = {};
-    const cmdHelp = {};
 
     const isMissing = (array) => !array || array.length < 1;
     const keysIncludes = (object, key) => Object.keys(object).includes(key);
@@ -61,8 +65,6 @@ function parseCmdJson(json) {
 
         const aliases = json[cmdKey].aliases;
         const listener = supportedCommands[cmdKey];
-
-        cmdGroups[cmdKey] = aliases;
 
         if (isMissing(aliases)) {
             console.warn(
@@ -84,11 +86,6 @@ function parseCmdJson(json) {
 
     const parseArgLabels = (cmdKey) => json[cmdKey].argLabels || null;
 
-    const parseHelp = (cmdKey) => {
-        const aliases = json[cmdKey].aliases;
-        if (isMissing(aliases)) return;
-        cmdHelp[cmdKey] = `${cmdKey}: ${formatArgList(aliases)}`;
-    };
     const parseArgJumps = (cmdKey) => {
         const group = json[cmdKey].argAliases;
 
@@ -128,23 +125,25 @@ function parseCmdJson(json) {
             return;
         }
         parseJumps(cmdKey);
-        parseHelp(cmdKey);
         const argJumps = parseArgJumps(cmdKey);
         const argLabels = parseArgLabels(cmdKey);
-        if (argJumps || argLabels || cmd.title || cmd.requiresOwner) {
+        if (argJumps || argLabels || !isMissing(cmd.aliases) ||
+            cmd.title || cmd.helpText || cmd.description ||
+            cmd.requiresOwner) {
             cmdData[cmdKey] = {};
             const data = cmdData[cmdKey];
             if (argJumps) data.argJumps = argJumps;
             if (argLabels) data.argLabels = argLabels;
+            if (!isMissing(cmd.aliases)) data.aliases = cmd.aliases;
             if (cmd.title) data.title = cmd.title;
+            if (cmd.helpText) data.helpText = cmd.helpText;
+            if (cmd.description) data.description = cmd.description;
             if (cmd.requiresOwner) data.requiresOwner = cmd.requiresOwner;
         }
     });
 
     return {
         cmdData: cmdData,
-        cmdGroups: cmdGroups,
-        cmdHelp: cmdHelp,
         cmdJumps: cmdJumps
     };
 }
@@ -169,85 +168,117 @@ function parseOraclesJson(json) {
                 continue;
             }
 
+            let results = oracle.results;
             {
-                let results = oracle.results;
-                const d = oracle.d;
-                const keys = Object.keys(results);
-                for (let i = 0, previous = 0; i < keys.length; i++) {
-                    const keyIdentifier = identifier + `'s results key '${key}'`;
-                    const key = parseInt(keys[i]);
-                    if (!key) {
-                        warn(`${keyIdentifier} is not an integer`);
-                        continue root;
-                    }
-                    if (key <= previous) {
-                        warn(`${keyIdentifier} is not sorted.`)
-                        continue root;
-                    }
-                    previous = key;
+                let d = oracle.d;
+                if (d && !parseInt(d)) {
+                    warn(`'s 'd' value ('${d}') is not an integer.`);
+                    continue;
                 }
-            };
+                if (!d) d = 100;
 
-            let valid = results &&
-                typeof results === 'object';
-            if (!valid) {
+                const keys = Object.keys(results);
+                for (let i = 0; i < keys.length; i++) {
+                    const key = parseInt(keys[i]);
+                    const keyId = `'s results key '${key}'`;
+                    if (!key) {
+                        warn(`${keyId} is not an integer`);
+                        continue root;
+                    }
+
+                    if (keyId < 1) {
+                        warn(`${keyId} is below the minimum value (1).`);
+                        continue root;
+                    }
+                    if (keyId > d) {
+                        warn(`${keyId} is above the maximum (${d}).`);
+                        continue root;
+                    }
+                }
+            }
+
+            if (!(results && typeof results === 'object')) {
                 warn(' does not have any results.');
                 continue;
             }
         }
-        if (!oracle.aliases || oracle.aliases instanceof Array) {
-            console.warn(`${identifier} has an 'aliases' definition but it is not an Array. Skipping.`);
+        if (oracle.aliases && !(oracle.aliases instanceof Array)) {
+            warn(' has an \'aliases\' definition but it is not an Array.');
             continue;
         }
-    }
-    const mapOracle = (s) => {
-        if (json.map.hasOwnProperty(s)) {
-            console.warn(`${identifier} is attempting to assign duplicate alias '${s}'. Skipping.`);
-            return;
+        const mapOracle = (s) => {
+            if (json.map.hasOwnProperty(s)) {
+                warn(` is attempting to assign duplicate alias '${s}'. Skipping.`);
+                return;
+            }
+            s = formatArg(s);
+            json.map[s] = oracle;
+        };
+
+        if (!oracle.aliases || oracle.aliases.length < 1) {
+            const title = formatArg(oracle.title);
+            console.info(`${identifier} does not have any aliases. Using automatic alias '${title}' instead.`);
+            mapOracle(title);
+        } else {
+            oracle.aliases.forEach(e => mapOracle(e));
         }
-        s = formatArg(s);
-        json.map[s] = oracle;
-    };
-
-    mapOracle(oracle.title);
-
-    if (!oracle.aliases) {
-        console.info(`${identifier} does not have any aliases. Using automatic alias '${formatArg(oracle.title)} instead.`);
-        mapOracle(oracle.title);
-    } else {
-        oracle.aliases.forEach(e => mapOracle(e));
     }
     return json;
 }
 
 
-client.on('ready', () => {
-    console.log('Ready.');
-});
+function onMsg(msg) {
+    if (msg.author.id === client.user.id) return;
 
-client.on('message', (msg) => {
-    const args = msg.content.split(' ');
-    if (!prefixes.find(s => msg.content.startsWith(s)))
-        return;
-    const cmd = args[0].substring(1).toLowerCase();
-    const cmdKey = cmdJson.cmdJumps[cmd];
-    if (!cmdKey) {
-        msg.channel.send(`${msg.author} Unrecognized command \`${cmd}\`.`);
+    const mention = new RegExp(`<@.?${client.user.id}>`, 'g');
+    let content = msg.content.replace(mention, '')
+        .replace(/ {2,}/, ' ').trim();
+
+    {
+        const hasPrefix = prefixes.find((prefix) => {
+            if (content.startsWith(prefix)) {
+                content = content.substring(prefix.length);
+                return true;
+            }
+            return false;
+        });
+        const relevant = hasPrefix ||
+            msg.isMentioned(client.user) ||
+            msg.channel instanceof discord.DMChannel;
+
+        if (!relevant) return;
+    }
+
+    const args = content.split(' ');
+    const cmd = args[0].toLowerCase();
+    const cmdFn = cmdJson.cmdJumps[cmd];
+
+    if (!cmdFn) {
+        // msg.channel.send(`${msg.author} Unrecognized command \`${cmd}\`.`);
         return;
     }
 
-    if (cmdJson.cmdData[cmdKey.name].requiresOwner &&
+    {
+        const date = dateFormat(Date.now(), 'mm/dd/yy HH:MM:ss');
+        const user = `${msg.author.username}#${msg.author.discriminator}`;
+        console.info(`[${date}] ${user} (${msg.channel.type}): ${msg.content}`);
+    }
+
+    if (cmdJson.cmdData[cmdFn.name].requiresOwner &&
         msg.author.id != tokens.discord.ownerId) {
         msg.channel.send(`${msg.author} You don't have permission to do that!`);
         return;
     }
+
     try {
-        (cmdKey)(msg, args.slice(1));
+        msg.content = content;
+        (cmdFn)(msg, args.slice(1));
+        return;
     } catch (error) {
         msg.channel.send(`${msg.author} Error: ${error.message}.`);
         console.error(`Error encountered while handling '${msg.content}':`, error);
     }
-});
+}
 
 function is_askTheOracle(msg, args) {
     const chan = msg.channel;
@@ -300,7 +331,7 @@ function is_oracleLookupTable(msg, args) {
         msg.channel.send(`${msg.author} ${oracleNotFoundMsg}`);
         return;
     }
-    const oracleName = args[0];
+    const oracleName = args[0].toLowerCase();
     const oracle = oracles.map[oracleName];
     if (!oracle) {
         msg.channel.send(`${msg.author} Oracle \`${oracleName}\` not found. ${oracleNotFoundMsg}`);
@@ -343,7 +374,7 @@ function is_oracleLookupTable(msg, args) {
 }
 
 function resolveArg(cmdFn, argAlias) {
-    return cmdJson.cmdData[cmdFn.name].argJumps[argAlias];
+    return cmdJson.cmdData[cmdFn.name].argJumps[argAlias.toLowerCase()];
 }
 
 function matchArg(cmdFn, argAlias, argFn) {
@@ -437,4 +468,69 @@ function exitProcess(msg, _args) {
     msg.channel.send(`Shutting down at the request of ${msg.author}.`)
         .then(() => client.destroy())
         .then(() => process.exit(0));
+}
+
+
+const helpSymbols = (() => {
+    const symbols = {
+        helpList: (msg) => {
+            return Object.keys(cmdJson.cmdData).reduce((s, cmdKey) => {
+                // if (cmdKey === helpMessage.name) return s;
+
+                const cmd = cmdJson.cmdData[cmdKey];
+
+                let marker = '';
+                if (cmd.requiresOwner) {
+                    if (!isOwner(msg.author))
+                        return s;
+
+                    marker = '&';
+                }
+                const aliases = cmd.aliases.map(alias => '`' + alias + '`').join(', ');
+                if (s) s += '\n\n';
+                return s + `${aliases}\n${marker}**${cmd.title}**\n    ${cmd.description}`;
+            }, '');
+        },
+        selfPing: (_msg) => client.user.toString()
+
+    };
+
+    return Object.keys(symbols).reduce((result, key) => {
+        const regexp = new RegExp('\\${' + key + '}', 'gm');
+        result.push({
+            regexp: regexp,
+            function: symbols[key]
+        });
+        return result;
+    }, []);
+})();
+
+function helpMessage(msg, args) {
+    let helpFn = args && args.length > 0 ?
+        cmdJson.cmdJumps[args[0]] : helpMessage;
+
+    let output = `${msg.author}`;
+
+    if (!helpFn) {
+        output += ` Command \`${args[0]}\` not recognized.`;
+        helpFn = helpMessage;
+    }
+
+    let helpText = cmdJson.cmdData[helpFn.name].helpText;
+    if (!helpText) helpText = '_(No documentation)_';
+
+
+    helpSymbols.forEach(symbol => {
+        if (!symbol.regexp.test(helpText)) return;
+        const result = symbol['function'](msg);
+        helpText = helpText.replace(symbol.regexp, result);
+    });
+
+    output += '\n' + helpText;
+
+    msg.channel.send(output);
+}
+
+function isOwner(user) {
+    return user.id === tokens.discord.ownerId;
 }

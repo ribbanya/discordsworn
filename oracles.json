@@ -1,9 +1,6 @@
 [{
     "title": "Action",
-    "aliases": [
-        "a",
-        "act"
-    ],
+    "aliases": ["a"],
     "results": {
         "1": "Scheme",
         "2": "Clash",
@@ -109,10 +106,7 @@
 },
 {
     "title": "Theme",
-    "aliases": [
-        "t",
-        "th"
-    ],
+    "aliases": ["t"],
     "results": {
         "1": "Risk",
         "2": "Ability",
@@ -218,9 +212,7 @@
 },
 {
     "title": "Region",
-    "aliases": [
-        "r"
-    ],
+    "aliases": ["r"],
     "results": {
         "12": "Barrier Islands",
         "24": "Ragged Coast",
@@ -236,6 +228,7 @@
 },
 {
     "title": "Location",
+    "aliases": ["l"],
     "results": {
         "1": "Hideout",
         "2": "Ruin",
@@ -292,10 +285,7 @@
 },
 {
     "title": "Coastal Waters Location",
-    "aliases": [
-        "cwl",
-        "coastal"
-    ],
+    "aliases": ["cwl"],
     "results": {
         "1": "Fleet",
         "2": "Sargassum",
@@ -317,11 +307,8 @@
     }
 },
 {
-    "title": "Location Descriptor",
-    "aliases": [
-        "l",
-        "loc"
-    ],
+    "title": "Location Descriptors",
+    "aliases": ["ld"],
     "results": {
         "2": "High",
         "4": "Remote",
@@ -376,12 +363,8 @@
     }
 },
 {
-    "title": "Settlement Name",
-    "aliases": [
-        "sn",
-        "settlement",
-        "set"
-    ],
+    "title": "Settlement Names",
+    "aliases": ["s", "sn"],
     "type": "nested",
     "results": {
         "15": {
@@ -498,129 +481,44 @@
     }
 },
 {
-    "title": "Quick Settlement Name Generator",
-    "aliases": [
-        "qsng",
-        "qsn",
-        "qs",
-        "quick-settlement-name",
-        "quick-settlement",
-        "qset"
-    ],
+    "title": "Quick Settlement Names",
+    "aliases": ["qs", "qsn"],
     "type": "multipleColumns",
     "headers": [
         "Prefix",
         "Suffix"
     ],
     "results": {
-        "4": [
-            "Bleak-",
-            "-moor"
-        ],
-        "8": [
-            "Green-",
-            "-ford"
-        ],
-        "12": [
-            "Wolf-",
-            "-crag"
-        ],
-        "16": [
-            "Raven-",
-            "-watch"
-        ],
-        "20": [
-            "Gray-",
-            "-hope"
-        ],
-        "24": [
-            "Red-",
-            "-wood"
-        ],
-        "28": [
-            "Axe-",
-            "-ridge"
-        ],
-        "32": [
-            "Great-",
-            "-stone"
-        ],
-        "36": [
-            "Wood-",
-            "-haven"
-        ],
-        "40": [
-            "Low-",
-            "-fall(s)"
-        ],
-        "44": [
-            "White-",
-            "-river"
-        ],
-        "48": [
-            "Storm-",
-            "-field"
-        ],
-        "52": [
-            "Black-",
-            "-hill"
-        ],
-        "56": [
-            "Mourn-",
-            "-bridge"
-        ],
-        "60": [
-            "New-",
-            "-mark"
-        ],
-        "64": [
-            "Stone-",
-            "-cairn"
-        ],
-        "68": [
-            "Grim-",
-            "-land"
-        ],
-        "72": [
-            "Lost-",
-            "-hall"
-        ],
-        "76": [
-            "High-",
-            "-mount"
-        ],
-        "80": [
-            "Rock-",
-            "-rock"
-        ],
-        "84": [
-            "Shield-",
-            "-brook"
-        ],
-        "88": [
-            "Sword-",
-            "-barrow"
-        ],
-        "92": [
-            "Frost-",
-            "-stead"
-        ],
-        "96": [
-            "Thorn-",
-            "-home"
-        ],
-        "100": [
-            "Long-",
-            "-wick"
-        ]
+        "4": ["Bleak-", "-moor"],
+        "8": ["Green-", "-ford"],
+        "12": ["Wolf-", "-crag"],
+        "16": ["Raven-", "-watch"],
+        "20": ["Gray-", "-hope"],
+        "24": ["Red-", "-wood"],
+        "28": ["Axe-", "-ridge"],
+        "32": ["Great-", "-stone"],
+        "36": ["Wood-", "-haven"],
+        "40": ["Low-", "-fall(s)"],
+        "44": ["White-", "-river"],
+        "48": ["Storm-", "-field"],
+        "52": ["Black-", "-hill"],
+        "56": ["Mourn-", "-bridge"],
+        "60": ["New-", "-mark"],
+        "64": ["Stone-", "-cairn"],
+        "68": ["Grim-", "-land"],
+        "72": ["Lost-", "-hall"],
+        "76": ["High-", "-mount"],
+        "80": ["Rock-", "-rock"],
+        "84": ["Shield-", "-brook"],
+        "88": ["Sword-", "-barrow"],
+        "92": ["Frost-", "-stead"],
+        "96": ["Thorn-", "-home"],
+        "100": ["Long-", "-wick"]
     }
 },
 {
     "title": "Settlement Trouble",
-    "aliases": [
-        "set-troub",
-        "st"
-    ],
+    "aliases": ["st"],
     "results": {
         "2": "Outsiders rejected",
         "4": "Dangerous discovery",
@@ -672,9 +570,7 @@
 },
 {
     "title": "NPC Role",
-    "aliases": [
-        "npcr"
-    ],
+    "aliases": ["nr", "npcr"],
     "results": {
         "2": "Criminal",
         "4": "Healer",
@@ -708,10 +604,8 @@
     }
 },
 {
-    "title": "Goal",
-    "aliases": [
-        "g"
-    ],
+    "title": "Goals",
+    "aliases": ["g"],
     "results": {
         "3": "Obtain an object",
         "6": "Make an agreement",
@@ -749,10 +643,8 @@
     }
 },
 {
-    "title": "NPC Descriptor",
-    "aliases": [
-        "npcd"
-    ],
+    "title": "NPC Descriptors",
+    "aliases": ["nd", "npcd"],
     "results": {
         "1": "Stoic",
         "2": "Attractive",
@@ -858,10 +750,7 @@
 },
 {
     "title": "Ironlander Names",
-    "aliases": [
-        "iln",
-        "in"
-    ],
+    "aliases": ["in", "iln"],
     "d": "200",
     "results": {
         "1": "Solana",
@@ -1068,9 +957,7 @@
 },
 {
     "title": "Elf Names",
-    "aliases": [
-        "en"
-    ],
+    "aliases": ["en"],
     "results": {
         "2": "Arsula",
         "4": "Naidita",
@@ -1126,9 +1013,7 @@
 },
 {
     "title": "Other Names",
-    "aliases": [
-        "on"
-    ],
+    "aliases": ["on"],
     "type": "multipleColumns",
     "headers": [
         "Giants",
@@ -1264,11 +1149,8 @@
     }
 },
 {
-    "title": "Combat Action",
-    "aliases": [
-        "comact",
-        "ca"
-    ],
+    "title": "Combat Actions",
+    "aliases": ["ca"],
     "results": {
         "3": "Compel a surrender.",
         "6": "Coordinate with allies.",
@@ -1291,6 +1173,7 @@
 },
 {
     "title": "Mystic Backlash",
+    "aliases": ["mb"],
     "results": {
         "5": "The ritual has the opposite affect.",
         "10": "You are sapped of strength.",
@@ -1316,9 +1199,7 @@
 },
 {
     "title": "Major Plot Twist",
-    "aliases": [
-        "mpt"
-    ],
+    "aliases": ["mpt"],
     "results": {
         "5": "It was all a diversion.",
         "10": "A dark secret is revealed.",
@@ -1344,9 +1225,7 @@
 },
 {
     "title": "Challenge Rank",
-    "aliases": [
-        "cr"
-    ],
+    "aliases": ["cr"],
     "results": {
         "20": "Troublesome",
         "55": "Dangerous",
@@ -1356,14 +1235,48 @@
     }
 },
 {
-    "aliases": [
-        "cr"
-    ],
+    "title": "Inciting Situations",
+    "aliases": ["is"],
     "results": {
-        "20": "Troublesome",
-        "55": "Dangerous",
-        "80": "Formidable",
-        "93": "Extreme",
-        "100": "Epic"
+        "5": "Roll again, but the situation is dire.",
+        "16": "Why are \\_\\_\\_ and \\_\\_\\_ fighting right now?",
+        "27": "\\_\\_\\_ enters the scene. How does this complicate things?",
+        "38": "What is \\_\\_\\_ coercing \\_\\_\\_ into?",
+        "46": "By whom is \\_\\_\\_ being chased, and why?",
+        "54": "What perilous situation is \\_\\_\\_ escaping right now?",
+        "62": "What awkward social situation is \\_\\_\\_ currently caught in?",
+        "70": "What is \\_\\_\\_ here to collect from \\_\\_\\_?",
+        "75": "\\_\\_\\_ is dying and \\_\\_\\_ is there. What happened?",
+        "80": "What trap has \\_\\_\\_ sprung, and who set it?",
+        "85": "To whom is \\_\\_\\_ tearfully or angrily apologizing right now?",
+        "90": "\\_\\_\\_ and \\_\\_\\_ are at a standstill. What happened?",
+        "95": "What has \\_\\_\\_ done to betray \\_\\_\\_?",
+        "100": "Roll twice on this table."
+    }
+},
+{
+    "title": "Gender Presentation and Identity",
+    "aliases": ["gpi"],
+    "results": {
+        "5": "Masculine cis man (he/him)",
+        "10": "Feminine cis woman (she/her)",
+        "15": "Androgynous cis man (he/him)",
+        "20": "Androgynous cis woman (she/her)",
+        "25": "Feminine cis man (he/him)",
+        "30": "Femme trans woman (she/her)",
+        "35": "Butch cis woman (she/her)",
+        "40": "Masculine trans man (he/him)",
+        "45": "Butch trans woman (she/her)",
+        "50": "Feminine trans man (he/him)",
+        "55": "Androgynous trans woman (she/her)",
+        "60": "Androgynous trans man (he/him)",
+        "65": "Androgynous agender person (they/them)",
+        "70": "Cis drag queen (he/him, sometimes she/her)",
+        "75": "Cis drag king (she/her, sometimes he/him)",
+        "80": "Femme agender person (they/them)",
+        "85": "Masculine agender person (they/them)",
+        "90": "Genderfluid person (he or she or they)",
+        "95": "Genderqueer person (he or she or they or other)",
+        "100": "Questioning"
     }
 }]
