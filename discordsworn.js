@@ -1,11 +1,19 @@
 ﻿const discord = require('discord.js');
 const fs = require('fs');
+const ws = require('ws');
 const dateFormat = require('dateformat');
 
 const client = new discord.Client(); {
     client.on('ready', () => console.log('Ready.'));
     client.on('message', onMsg);
-    client.on('error', (error) => console.error(error));
+    client.on('error', (error) => {
+        console.error(error);
+        if (error.target instanceof ws.WebSocket) {
+            if (error.target.readyState === ws.WebSocket.CLOSED) {
+                reconnectDiscordClient();
+            }
+        }
+    });
 }
 
 const supportedCommands = [
@@ -21,13 +29,7 @@ const supportedCommands = [
 const supportedArgs = {
     [is_askTheOracle.name]: [
         is_oracleLookupTable.name,
-        '0',
-        '10',
-        '25',
-        '50',
-        '75',
-        '90',
-        '100'
+        '0', '10', '25', '50', '75', '90', '100'
     ]
 };
 
@@ -48,10 +50,6 @@ login();
 
 function formatArg(arg) {
     return arg.toLowerCase().replace(/\s+/g, '-');
-}
-
-function formatArgList(argList) {
-    return argList.map(a => '`' + a + '`').join(', ');
 }
 
 function parseCmdJson(json) {
@@ -215,11 +213,9 @@ function parseOraclesJson(json) {
             json.map[s] = oracle;
         };
 
-        if (!oracle.aliases || oracle.aliases.length < 1) {
-            const title = formatArg(oracle.title);
-            console.info(`${identifier} does not have any aliases. Using automatic alias '${title}' instead.`);
-            mapOracle(title);
-        } else {
+        const title = formatArg(oracle.title);
+        mapOracle(title);
+        if (oracle.aliases && oracle.aliases.length > 0) {
             oracle.aliases.forEach(e => mapOracle(e));
         }
     }
@@ -233,7 +229,6 @@ function onMsg(msg) {
     const mention = new RegExp(`<@.?${client.user.id}>`, 'g');
     let content = msg.content.replace(mention, '')
         .replace(/ {2,}/, ' ').trim();
-
     {
         const hasPrefix = prefixes.find((prefix) => {
             if (content.startsWith(prefix)) {
@@ -412,15 +407,15 @@ function is_rollActionDice(msg, args) {
     //let success = challenge.reduce(n => (action + mods) > n ? 1 : 0, 0);
     let success = 0;
     for (let i = 0; i < challenge.length; i++) {
-        if (action + mods > challenge[i])
+        if (action + mods > challenge[i]) {
             success++;
+        }
     }
 
     const successStr = ['Miss...', 'Weak hit!', '_Strong hit!_'][success];
     result += `\n${msg.author} ${successStr}`;
 
-    if (challenge[0] == challenge[1])
-        result += ' _MATCH!_';
+    if (challenge[0] == challenge[1]) result += ' _MATCH!_';
     chan.send(result);
 }
 
@@ -481,8 +476,7 @@ const helpSymbols = (() => {
 
                 let marker = '';
                 if (cmd.requiresOwner) {
-                    if (!isOwner(msg.author))
-                        return s;
+                    if (!isOwner(msg.author)) return s;
 
                     marker = '&';
                 }
