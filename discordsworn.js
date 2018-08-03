@@ -295,7 +295,6 @@ function is_askTheOracle(msg, args) {
     }
 
     let likelihood = args[0].toLowerCase();
-    const question = args.length > 2 ? args.slice(1).join(' ') : null;
     const odds = argJumps[likelihood] || Number(likelihood);
     if (odds == null || odds != ~~odds || odds < 0 || odds > 100) {
         chan.send(invalidArgsMsg);
@@ -309,13 +308,14 @@ function is_askTheOracle(msg, args) {
         likelihood = `The result is ${likelihood} (**${odds}%**) vs.`;
     }
     const result = d(100);
-    let resultMsg = `${likelihood} **${result}**\n`;
-    if (question != null) {
-        resultMsg += '"' + question + '"\n';
-    }
-    resultMsg += msg.author + ' ' +
+    let output = `${likelihood} **${result}**…\n`;
+
+    const comment = args.length > 1 ? args.slice(1).join(' ') : null;
+    if (comment) output += `"${comment}"\n`;
+
+    output += msg.author + ' ' +
         (result <= odds ? '**Yes**.' : '**No**.');
-    chan.send(resultMsg);
+    chan.send(output);
 }
 
 function is_oracleLookupTable(msg, args) {
@@ -335,6 +335,10 @@ function is_oracleLookupTable(msg, args) {
     //TODO: Check for oracle.results
     let roll = d(oracle.d ? oracle.d : 100);
     let output = `Consulting the Oracle of **${oracle.title}** vs. **${roll}**…\n`;
+
+    const comment = args.length > 1 ? args.slice(1).join(' ') : null;
+    if (comment) output += `"${comment}"\n`;
+
     const lookup = (results, roll) => Object.keys(results).find(k => k >= roll);
     let key = lookup(oracle.results, roll);
     let value = oracle.results[key];
