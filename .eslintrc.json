@@ -9,44 +9,20 @@
         "sourceType": "script"
     },
     "rules": {
-        "indent": [
-            "error",
-            4,
-            {
-                "SwitchCase": 0
-            }
+        "curly": [
+            "error", "multi-line"
         ],
-        "linebreak-style": [
-            "error",
-            "windows"
-        ],
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ],
-        "no-console": [
-            "off"
-        ],
+        "indent": ["error", 4, { "SwitchCase": 0 }],
+        "linebreak-style": ["error", "windows"],
+        "quotes": ["error", "single"],
+        "semi": ["error", "always"],
+        "no-console": ["off"],
         "no-warning-comments": [
-            "warn",
-            {
-                "terms": [
-                    "todo"
-                ]
-            }
+            "warn", { "terms": ["todo"] }
         ],
         "no-unused-vars": [
-            "warn",
-            {
-                "argsIgnorePattern": "^_"
-            }
+            "warn", { "argsIgnorePattern": "^_" }
         ],
-        "comma-dangle": [
-            "warn"
-        ]
+        "comma-dangle": ["warn"]
     }
 }
