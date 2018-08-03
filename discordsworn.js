@@ -215,11 +215,9 @@ function parseOraclesJson(json) {
             json.map[s] = oracle;
         };
 
-        if (!oracle.aliases || oracle.aliases.length < 1) {
-            const title = formatArg(oracle.title);
-            console.info(`${identifier} does not have any aliases. Using automatic alias '${title}' instead.`);
-            mapOracle(title);
-        } else {
+        const title = formatArg(oracle.title);
+        mapOracle(title);
+        if (oracle.aliases && oracle.aliases.length > 0) {
             oracle.aliases.forEach(e => mapOracle(e));
         }
     }
