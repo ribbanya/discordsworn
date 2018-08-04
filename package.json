@@ -1,17 +1,28 @@
 {
-  "name": "discordsworn",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "dependencies": {
-    "dateformat": "^3.0.3",
-    "discord.js": "^11.3.2",
-    "eslint": "^5.2.0"
-  },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC"
+    "name": "discordsworn",
+    "version": "1.2.1",
+    "description": "A Discord dice rolling bot that supports Ironsworn and other tabletop RPG systems.",
+    "bugs": {
+        "url": "https://github.com/ribbanya/discordsworn/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ribbanya/discordsworn.git"
+    },
+    "license": "CC BY-NC-SA 4.0",
+    "author": {
+        "name": "Robin Avery",
+        "email": "ribbanya@gmail.com",
+        "url": "https://github.com/ribbanya"
+    },
+    "main": "discordsworn.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "dateformat": "^3.0.3",
+        "discord.js": "^11.3.2",
+        "eslint": "^5.2.0"
+    },
+    "devDependencies": {}
 }
