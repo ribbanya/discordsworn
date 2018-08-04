@@ -166,7 +166,7 @@ function parseOraclesJson(json) {
                 continue;
             }
 
-            let results = oracle.results;
+            const results = oracle.results;
             {
                 let d = oracle.d;
                 if (d && !parseInt(d)) {
@@ -337,7 +337,7 @@ function is_oracleLookupTable(msg, cmdKey, args, tableAlias) {
         'Please specify an Oracle from the list:\n' +
         Object.keys(oracles.map).map(s => '`' + s + '`').join(', ');
 
-    let helpOutput = errorHelp(cmdKey, [tableAlias]);
+    const helpOutput = errorHelp(cmdKey, [tableAlias]);
 
     if (args.length < 1) {
         let output = `${msg.author} ${oracleNotFoundMsg}`;
@@ -363,7 +363,7 @@ function is_oracleLookupTable(msg, cmdKey, args, tableAlias) {
 
     const lookup = (results, roll) => Object.keys(results).find(k => k >= roll);
     let key = lookup(oracle.results, roll);
-    let value = oracle.results[key];
+    const value = oracle.results[key];
     const list = [];
     switch (oracle.type) {
     case null:

@@ -23,6 +23,10 @@
         "no-unused-vars": [
             "warn", { "argsIgnorePattern": "^_" }
         ],
-        "comma-dangle": ["warn"]
+        "comma-dangle": ["warn"],
+        "prefer-const": ["error", {
+            "destructuring": "any",
+            "ignoreReadBeforeAssign": false
+        }]
     }
 }
