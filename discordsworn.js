@@ -8,8 +8,8 @@ const client = new discord.Client(); {
     client.on('message', onMsg);
     client.on('error', (error) => {
         console.error(error);
-        if (error.target instanceof ws.WebSocket) {
-            if (error.target.readyState === ws.WebSocket.CLOSED) {
+        if (error.target instanceof ws) {
+            if (error.target.readyState === ws.CLOSED) {
                 reconnectDiscordClient();
             }
         }
@@ -245,13 +245,10 @@ function onMsg(msg) {
     }
 
     const args = content.split(' ');
-    const cmd = args[0].toLowerCase();
-    const cmdFn = cmdJson.cmdJumps[cmd];
+    const cmdKey = args[0].toLowerCase();
+    const cmdFn = cmdJson.cmdJumps[cmdKey];
 
-    if (!cmdFn) {
-        // msg.channel.send(`${msg.author} Unrecognized command \`${cmd}\`.`);
-        return;
-    }
+    if (!cmdFn) return;
 
     {
         const date = dateFormat(Date.now(), 'mm/dd/yy HH:MM:ss');
@@ -267,30 +264,47 @@ function onMsg(msg) {
 
     try {
         msg.content = content;
-        (cmdFn)(msg, args.slice(1));
+        (cmdFn)(msg, cmdKey, args.slice(1));
         return;
     } catch (error) {
-        msg.channel.send(`${msg.author} Error: ${error.message}.`);
+        let output = `${msg.author} Error: ${error.message}.`;
+        const helpOutput = errorHelp(cmdKey);
+        if (helpOutput) output += `\n${helpOutput}`;
+        msg.channel.send(output);
         console.error(`Error encountered while handling '${msg.content}':`, error);
     }
 }
 
-function is_askTheOracle(msg, args) {
+const helpAlias = Object.entries(cmdJson.cmdJumps)
+    .find(kvp => kvp[1] === helpMessage)[0];
+
+function errorHelp(cmdKey, args) {
+    if (!helpAlias) return null;
+    if (args && args.length > 0) args = ` ${args.join(' ')}`;
+    else args = '';
+    return `Type \`${prefixes[0]}${helpAlias} ${cmdKey}${args}\` for help.`;
+}
+
+function is_askTheOracle(msg, cmdKey, args) {
     const chan = msg.channel;
     const data = cmdJson.cmdData[is_askTheOracle.name];
     const argJumps = data.argJumps;
     const argLabels = data.argLabels;
-    const invalidArgsMsg =
+
+    let invalidArgsMsg =
         msg.author +
         ' A likelihood is required. Please use a whole number between ' +
         '0-100 or one of the following:\n' +
         Object.keys(argJumps).map(s => '`' + s + '`').join(', ');
+    const helpOutput = errorHelp(cmdKey);
+    if (helpOutput) invalidArgsMsg += `\n${helpOutput}`;
+
     if (args.length < 1) {
         chan.send(invalidArgsMsg);
         return;
     }
     if (matchArg(is_askTheOracle, args[0], is_oracleLookupTable)) {
-        is_oracleLookupTable(msg, args.slice(1));
+        is_oracleLookupTable(msg, cmdKey, args.slice(1), args[0]);
         return;
     }
 
@@ -318,18 +332,26 @@ function is_askTheOracle(msg, args) {
     chan.send(output);
 }
 
-function is_oracleLookupTable(msg, args) {
+function is_oracleLookupTable(msg, cmdKey, args, tableAlias) {
     const oracleNotFoundMsg =
         'Please specify an Oracle from the list:\n' +
         Object.keys(oracles.map).map(s => '`' + s + '`').join(', ');
+
+    let helpOutput = errorHelp(cmdKey, [tableAlias]);
+
     if (args.length < 1) {
-        msg.channel.send(`${msg.author} ${oracleNotFoundMsg}`);
+        let output = `${msg.author} ${oracleNotFoundMsg}`;
+        if (helpOutput) output += `\n${helpOutput}`;
+        msg.channel.send(output);
         return;
     }
     const oracleName = args[0].toLowerCase();
     const oracle = oracles.map[oracleName];
     if (!oracle) {
-        msg.channel.send(`${msg.author} Oracle \`${oracleName}\` not found. ${oracleNotFoundMsg}`);
+        let output = `${msg.author} Oracle \`${oracleName}\` not found.` +
+            `${oracleNotFoundMsg}`;
+        if (helpOutput) output += `\n${helpOutput}`;
+        msg.channel.send(output);
         return;
     }
     //TODO: Check for oracle.results
@@ -389,9 +411,9 @@ function rInt(min, max, count = 1) {
     return Array.apply(null, Array(count)).map(() => rInt(min, max));
 }
 
-function is_rollActionDice(msg, args) {
+function is_rollActionDice(msg, cmdKey, args) {
     const chan = msg.channel;
-    const mods = args.reduce(function (m, s) {
+    const mods = args.reduce((m, s) => {
         const i = parseInt(s);
         return m + (i ? i : 0);
     }, 0);
@@ -423,9 +445,9 @@ function is_rollActionDice(msg, args) {
     chan.send(result);
 }
 
-function aw_rollMoveDice(msg, args) {
+function aw_rollMoveDice(msg, cmdKey, args) {
     var chan = msg.channel;
-    var mods = args.reduce(function (m, s) {
+    var mods = args.reduce((m, s) => {
         const i = parseInt(s);
         return m + (i ? i : 0);
     }, 0);
@@ -453,18 +475,24 @@ function login() {
     client.login(tokens.discord.botAccount);
 }
 
-function reconnectDiscordClient(msg, _args) {
-    msg.channel.send('Resetting...')
+function reconnectDiscordClient(msg, _cmdKey, _args) {
+    const a = msg.author;
+
+    console.info(`Reset request received from ${a.id} (${a.username}#${a.discriminator}).`);
+    console.log('Resetting.');
+
+    msg.channel.send(`Resetting at the request of ${a}.`)
         .then(() => client.destroy())
         .then(() => login());
 }
 
-function exitProcess(msg, _args) {
+function exitProcess(msg, _cmdKey, _args) {
     const a = msg.author;
-    console.info(`Shutdown request received from ${a.id} (${a.username}#${a.discriminator}.)`);
 
+    console.info(`Shutdown request received from ${a.id} (${a.username}#${a.discriminator}).`);
     console.log('Shutting down.');
-    msg.channel.send(`Shutting down at the request of ${msg.author}.`)
+
+    msg.channel.send(`Shutting down at the request of ${a}.`)
         .then(() => client.destroy())
         .then(() => process.exit(0));
 }
@@ -503,7 +531,7 @@ const helpSymbols = (() => {
     }, []);
 })();
 
-function helpMessage(msg, args) {
+function helpMessage(msg, _cmdKey, args) {
     let helpFn = args && args.length > 0 ?
         cmdJson.cmdJumps[args[0]] : helpMessage;
 
