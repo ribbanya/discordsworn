@@ -2,6 +2,7 @@
 const fs = require('fs');
 const ws = require('ws');
 const dateFormat = require('dateformat');
+const Dice = require('node-dice-js');
 
 const client = new discord.Client(); {
     client.on('ready', () => console.log('Ready.'));
@@ -19,6 +20,7 @@ const client = new discord.Client(); {
 const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
     aw_rollMoveDice,
+    rollDice,
     helpMessage,
     reconnectDiscordClient, exitProcess
 ].reduce((sc, fn) => {
@@ -400,6 +402,12 @@ function resolveArg(cmdFn, argAlias) {
 
 function matchArg(cmdFn, argAlias, argFn) {
     return resolveArg(cmdFn, argAlias) == argFn.name;
+}
+
+function rollDice(msg, _cmdKey, args) {
+    const expression = args.join('');
+    const r = new Dice().execute(expression);
+    msg.channel.send(r.text);
 }
 
 function d(sides, count = 1) {
