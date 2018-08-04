@@ -22,7 +22,8 @@
     "dependencies": {
         "dateformat": "^3.0.3",
         "discord.js": "^11.3.2",
-        "eslint": "^5.2.0"
+        "eslint": "^5.2.0",
+        "node-dice-js": "^0.1.2"
     },
     "devDependencies": {}
 }
