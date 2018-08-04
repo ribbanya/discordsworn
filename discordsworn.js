@@ -446,26 +446,26 @@ function is_rollActionDice(msg, cmdKey, args) {
 }
 
 function aw_rollMoveDice(msg, cmdKey, args) {
-    var chan = msg.channel;
-    var mods = args.reduce((m, s) => {
+    const chan = msg.channel;
+    const mods = args.reduce((m, s) => {
         const i = parseInt(s);
         return m + (i ? i : 0);
     }, 0);
-    var action = d(6, 2);
+    const action = d(6, 2);
     const total = action[0] + action[1] + mods;
-    var modStr = args.reduce((s, n) => {
+    const modStr = args.reduce((s, n) => {
         const i = parseInt(n);
         if (!i && i !== 0) return s;
         return s + ' ' + (i < 0 ? '-' : '+') + ' ' + Math.abs(i);
     }, '');
-    var result = '' +
+    let result = '' +
         `**${total}** (**${action[0]}** & **${action[1]}**${modStr})`;
 
-    var success;
+    let success;
     if (total <= 6) success = 0;
     else if (total <= 9) success = 1;
     else success = 2;
-    var successStr = ['Miss...', 'Mixed success!', '_Success!_'][success];
+    const successStr = ['Miss...', 'Mixed success!', '_Success!_'][success];
     result += `\n${msg.author} ${successStr}`;
 
     chan.send(result);
