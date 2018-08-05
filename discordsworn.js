@@ -4,13 +4,14 @@ const ws = require('ws');
 const dateFormat = require('dateformat');
 
 const client = new discord.Client(); {
-    client.on('ready', () => console.log('Ready.'));
+    client.on('ready', function onReady() { console.log('Ready.'); });
     client.on('message', onMsg);
-    client.on('error', (error) => {
+    client.on('error', function onError(error) {
         console.error(error);
         if (error.target instanceof ws) {
             if (error.target.readyState === ws.CLOSED) {
-                reconnectDiscordClient();
+                console.info('WebSocket closed unexpectedly. Reestablishing connection...');
+                client.destroy().then(() => login());
             }
         }
     });
@@ -472,7 +473,7 @@ function aw_rollMoveDice(msg, cmdKey, args) {
 }
 
 function login() {
-    client.login(tokens.discord.botAccount);
+    return client.login(tokens.discord.botAccount);
 }
 
 function reconnectDiscordClient(msg, _cmdKey, _args) {
