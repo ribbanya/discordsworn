@@ -1,0 +1,19 @@
+{
+    "content": "@Robin",
+    "embed": {
+        "title": "Ask the Oracle",
+        "description": "_Asks the Oracle_ for inspiration.",
+        "color": 4791838,
+
+        "fields": [
+        {
+            "name": "Yes/No Questions",
+            "value": "To _Ask_ a Yes/No question, start with the `oracle` command and then an Odds keyword. Then, optionally, add a description:\n```\n.oracle unlikely Will this work?```\n_Ask_ the same question, but with a different command name and abbreviated Odds keyword ('ul' for 'unlikely'):\n```\n.ask ul Will this work?```_Ask_ the same question, but with no description, the shortest command name, and the numeric equivalent of the Unlikely keyword (25%):\n```\n.o 25```",
+            "inline": true
+        },
+        {
+            "name": "Tables",
+            "value": "To consult an _Oracle_ table, start with the `oracle` command, then the word `table`, then the keyword for the table you wish to consult:\n```\n.oracle table elf-names```\nYou can abbreviate `oracle` and `table` to `o` and `t`, respectively, and each table has its own shorthand"
+        }]
+    }
+}
