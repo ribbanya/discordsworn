@@ -29,7 +29,7 @@ const supportedCommands = [
     return sc;
 }, {}); //TODO separate module
 
-const supportedArgs = {
+const supportedArgs = { //TODO: supportedCommands[cmdKey].supportedArgs
     [is_askTheOracle.name]: [
         is_oracleLookupTable.name,
         '0', '10', '25', '50', '75', '90', '100'
@@ -408,7 +408,8 @@ function matchArg(cmdFn, argAlias, argFn) {
 function rollDice(msg, _cmdKey, args) {
     const expression = args.join('');
     const r = new Dice().execute(expression);
-    msg.channel.send(r.text);
+
+    msg.channel.send(r.outcomes[0].rolls.toString());
 }
 
 function d(sides, count = 1) {
