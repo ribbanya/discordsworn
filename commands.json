@@ -142,5 +142,11 @@
         "description": "Shuts down the connection to Discord, then exits the script.",
         "requiresOwner": true,
         "aliases": ["shutdown"]
+    },
+    "embedTest": {
+        "title": "Embed Test",
+        "description": "TODO Delete me",
+        "requiresOwner": true,
+        "aliases": ["mb", "embed"]
     }
 }

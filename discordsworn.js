@@ -23,7 +23,7 @@ const supportedCommands = [
     aw_rollMoveDice,
     rollDice,
     helpMessage,
-    reconnectDiscordClient, exitProcess
+    reconnectDiscordClient, exitProcess, embedTest
 ].reduce((sc, fn) => {
     sc[fn.name] = fn;
     return sc;
@@ -129,7 +129,7 @@ function parseCmdJson(json) {
         const argJumps = parseArgJumps(cmdKey);
         const argLabels = parseArgLabels(cmdKey);
         if (argJumps || argLabels || !isMissing(cmd.aliases) ||
-            cmd.title || cmd.helpText || cmd.description ||
+            cmd.title || cmd.help || cmd.description ||
             cmd.requiresOwner) {
             cmdData[cmdKey] = {};
             const data = cmdData[cmdKey];
@@ -137,7 +137,7 @@ function parseCmdJson(json) {
             if (argLabels) data.argLabels = argLabels;
             if (!isMissing(cmd.aliases)) data.aliases = cmd.aliases;
             if (cmd.title) data.title = cmd.title;
-            if (cmd.helpText) data.helpText = cmd.helpText;
+            if (cmd.help) data.help = cmd.help;
             if (cmd.description) data.description = cmd.description;
             if (cmd.requiresOwner) data.requiresOwner = cmd.requiresOwner;
         }
@@ -568,4 +568,25 @@ function helpMessage(msg, _cmdKey, args) {
 
 function isOwner(user) {
     return user.id === tokens.discord.ownerId;
+}
+
+function embedTest(msg, _cmdKey, _args) {
+    const embed = {
+        'title': 'Discordsworn Help',
+        'description': 'This is **Discordsworn**, a dice rolling bot for _[Ironsworn](https://www.ironswornrpg.com/)_ and other systems. Feel free to [report a bug, request a feature](https://github.com/ribbanya/discordsworn/issues/new), or [check out the code](https://github.com/ribbanya/discordsworn) on GitHub!',
+        'thumbnail': {
+            'url': 'https://cdn.discordapp.com/avatars/469514510852423681/325889752f8d9a16ef8d17bb34f5d22c.png'
+        },
+        'author': {
+            'name': 'Robin Avery',
+            'url': 'https://github.com/ribbanya',
+            'icon_url': 'https://cdn.discordapp.com/avatars/131702386312871936/eeac5eab4cd3538df521583d664336e8.png'
+        },
+        'fields': [{
+            'name': 'Using Commands',
+            'value': 'To use a command, type `.` and then a command name from the list below.\n\nYou can also ping or directly message <@468051091637010445> (without the `.`):\n```@Discordsworn#4327 \nironsworn-action```'
+        }]
+    };
+
+    msg.channel.send(msg.author.toString(), { embed });
 }

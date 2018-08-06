@@ -1,25 +1,22 @@
 {
-    "content": "@Robin",
+    "content": "this `supports` __a__ **subset** *of* ~~markdown~~ 😃 ```js\nfunction foo(bar) {\n  console.log(bar);\n}\n\nfoo(1);```",
     "embed": {
-        "fields": [
-        {
-            "name": "_Apocalypse World_ Move Roll",
-            "value": "Performs a Move roll from the _Apocalypse World_ engine.",
-            "inline": true
+        "title": "title ~~(did you know you can have markdown here too?)~~",
+        "description": "this supports [named links](https://discordapp.com) on top of the previously shown subset of markdown. ```\nyes, even code blocks```",
+        "url": "https://discordapp.com",
+        "color": 16729344,
+        "footer": {
+            "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png",
+            "text": "footer text"
         },
-        {
-            "name": "Aliases",
-            "value": "`m`, `aw`, `move`, `apocalypse-world-move`",
-            "inline": true
+        "image": {
+            "url": "https://cdn.discordapp.com/embed/avatars/0.png"
         },
-        {
-            "name": "Quick Reference",
-            "value": "```\n.aw Going Aggro on the bartender with +2 hard and +1 forward.\n``````\n.m 2 1```",
-            "inline": true
+        "author": {
+            "name": "<@131702386312871936>",
+            "url": "https://discordapp.com",
+            "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
         },
-        {
-            "name": "Details",
-            "value": "To perform a Move, simply use the `apocalypse-world-move` command or one of its aliases. You may include any number of whole numbers, which will be counted as modifiers. Text is ignored, which allows you to add a description to your rolls:\n```.apocalypse-world-move Rolling to Manipulate the guard to let me pass by telling him I have business with the gang leader. +2 hot and +1 forward from earlier.```The command has a few aliases (`aw`, `move`, and `m`). All you need are the numeric modifiers; the text is purely for flavour. All aliases function exactly the same:\n```.aw Manipulating the guard by lying: +2 hot, +1 forward``````.move Manipulate +2 h +1 F````+`'s can be omitted, as well as any text:\n```.m 2 1```You can put as much text, and as many modifiers, into a roll as Discord's 2,000-character limit will allow."
-        }]
+        "fields": []
     }
 }
