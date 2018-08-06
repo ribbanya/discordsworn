@@ -19,7 +19,7 @@
         },
         {
             "name": "Yes/No Questions",
-            "value": "To _Ask_ a Yes/No question, start with the `oracle` command and then an Odds keyword. Then, optionally, add a description:\n```\n.oracle unlikely Will this work?\n```_Ask_ the same question, but with a different command name and abbreviated Odds keyword ('ul' for 'unlikely'):\n```\n.ask ul Will this work?\n```_Ask_ the same question, but with no description, the shortest command name, and the numeric equivalent of the Unlikely keyword (25%):\n```\n.o 25\n```"
+            "value": "To _Ask_ a yes or no question, start with the `oracle` command and then an Odds keyword. Then, optionally, add a description:\n```\n.oracle unlikely Will this work?\n```_Ask_ the same question, but with a different command name and abbreviated Odds keyword (`ul` for 'unlikely'):\n```\n.ask ul Will this work?\n```_Ask_ the same question, but with no description, the shortest command name, and the numeric equivalent of the Unlikely keyword (25%):\n```\n.o 25\n```"
         },
         {
             "name": "Odds Keywords",
@@ -36,11 +36,11 @@
         },
         {
             "name": "Homebrew Tables",
-            "value": "__I__nciting __S__ituations, __G__ender __P__resentation and __I__dentity",
+            "value": "• __I__nciting __S__ituations • __G__ender __P__resentation and __I__dentity",
             "inline": true
         },
         {
-            "name": "Using Tables",
+            "name": "Using Table Keywords",
             "value": "Underlined letters indicate the abbreviation for a table:\n```\n.o t cwl\n```When specifying tables with multiple words, replace spaces with dashes:\n```\n.o t coastal-waters-location\n```Terms can be lowercase, but need not be:\n```\n.ORACLE TABLE Coastal-Waters-Location\n```"
         }]
     }
