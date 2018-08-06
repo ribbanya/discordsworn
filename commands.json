@@ -8,7 +8,31 @@
     "is_rollActionDice": {
         "title": "Ironsworn Action Roll",
         "description": "Performs an Action Roll from the _Ironsworn_ engine.",
-        "helpText": "**__Ironsworn Action Roll__**\nPerforms an Action Roll from the _Ironsworn_ engine.\n\nTo perform an Action Roll, simply use the `ironsworn-action` command or one of its aliases. You may include any number of whole numbers, which will be counted as modifiers. Text is ignored, which allows you to add a description to your rolls:\n```\n.ironsworn-action Rolling to Compel the guard to let me pass by telling him I have business with the Prince. +2 Shadow and +1 for my Secure Advantage.```\nThe command has a few aliases (`is`, `act`, and `a`). All you need are the numeric modifiers; the text is purely for flavour. All aliases function exactly the same:\n```\n.is Compelling the guard by lying: +2 Shadow, +1 Secure Advantage```\n```\n.act Compel +2 s +1 SA```\n`+`'s can be omitted, as well as any text:\n```\n.a 2 1```\nYou can put as much text, and as many modifiers, into a roll as Discord's 2,000-character limit will allow.",
+        "help": {
+            "content": "@Robin",
+            "embed": {
+                "fields": [
+                {
+                    "name": "_Ironsworn_ Action Roll",
+                    "value": "Performs an Action Roll from the _Ironsworn_ engine.",
+                    "inline": true
+                },
+                {
+                    "name": "Aliases",
+                    "value": "`a`, `is`, `act`, `ironsworn-action`",
+                    "inline": true
+                },
+                {
+                    "name": "Quick Reference",
+                    "value": "```\n.is Sojourning into the town with +2 heart and +1 from Secure Advantage.\n``````\n.a 2 1```",
+                    "inline": true
+                },
+                {
+                    "name": "Details",
+                    "value": "To perform an Action Roll, simply use the `ironsworn-action` command or one of its aliases. You may include any number of whole numbers, which will be counted as modifiers. Text is ignored, which allows you to add a description to your rolls:\n```\n.ironsworn-action Rolling to Compel the guard to let me pass by telling him I have business with the Prince. +2 Shadow and +1 for my Secure Advantage.```The command has a few aliases (`a`, `is`, and `act`). All you need are the numeric modifiers; the text is purely for flavour. All aliases function exactly the same:\n```\n.is Compelling the guard by lying: +2 Shadow, +1 Secure Advantage``````\n.act Compel +2 s +1 SA````+`'s can be omitted, as well as any text:\n```\n.a 2 1```You can put as much text, and as many modifiers, into a roll as Discord's 2,000-character limit will allow."
+                }]
+            }
+        },
         "aliases": ["a", "is", "act", "ironsworn-action"]
     },
     "is_askTheOracle": {

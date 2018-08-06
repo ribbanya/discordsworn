@@ -3,45 +3,23 @@
     "embed": {
         "fields": [
         {
-            "name": "Ask the Oracle",
-            "value": "_Asks the Oracle_ for inspiration.",
+            "name": "_Ironsworn_ Action Roll",
+            "value": "Performs an Action Roll from the _Ironsworn_ engine.",
             "inline": true
         },
         {
             "name": "Aliases",
-            "value": "`ask`, `oracle`, `o`",
+            "value": "`a`, `is`, `act`, `ironsworn-action`",
             "inline": true
         },
         {
             "name": "Quick Reference",
-            "value": "```\n.o f Heads or tails?\n``````\n.o l``````\n.o t iln What is the merchant's name?``````\n.o t r```",
+            "value": "```\n.is Sojourning into the town with +2 heart and +1 from Secure Advantage.\n``````\n.a 2 1```",
             "inline": true
         },
         {
-            "name": "Yes/No Questions",
-            "value": "To _Ask_ a yes or no question, start with the `oracle` command and then an Odds keyword. Then, optionally, add a description:\n```\n.oracle unlikely Will this work?\n```_Ask_ the same question, but with a different command name and abbreviated Odds keyword (`ul` for 'unlikely'):\n```\n.ask ul Will this work?\n```_Ask_ the same question, but with no description, the shortest command name, and the numeric equivalent of the Unlikely keyword (25%):\n```\n.o 25\n```"
-        },
-        {
-            "name": "Odds Keywords",
-            "value": "• **0%**: `n`, `nc`, `no-chance`, `impossible`,\n• **10%**: `s`, `sc`, `small-chance`,\n• **25%**: `u`, `ul`, `unlikely`,\n• **50%**: `f`, `ff`, `fifty-fifty`, `50-50`, `5050`,\n• **75%**: `l`, `likely`,\n• **90%**: `a`, `ac`, `almost-certain`,\n• **100%**: `c`, `certain`"
-        },
-        {
-            "name": "Tables",
-            "value": "To consult an _Oracle_ table, start with the `oracle` command, then the word `table`, then the keyword for the table you wish to consult:\n```\n.oracle table elf-names\n```You can abbreviate `oracle` and `table` to `o` and `t`, respectively, and each table has its own shorthand"
-        },
-        {
-            "name": "Official _Ironsworn_ Tables",
-            "value": "• __A__ction • __T__heme • __R__egion • __L__ocation • __C__oastal __W__aters __L__ocation • __L__ocation __D__escriptors • __S__ettlement __N__ames • __Q__uick __S__ettlement __N__ames • __S__ettlement __T__rouble • __N__PC __R__oles • __G__oals • __N__PC __D__escriptors • __I__ronlander __N__ames • __E__lf __N__ames • __O__ther __N__ames • __C__ombat __A__ctions • __M__ystic __B__acklash • __M__ajor __P__lot __T__wist • __C__hallenge __R__ank",
-            "inline": true
-        },
-        {
-            "name": "Homebrew Tables",
-            "value": "• __I__nciting __S__ituations • __G__ender __P__resentation and __I__dentity",
-            "inline": true
-        },
-        {
-            "name": "Using Table Keywords",
-            "value": "Underlined letters indicate the abbreviation for a table:\n```\n.o t cwl\n```When specifying tables with multiple words, replace spaces with dashes:\n```\n.o t coastal-waters-location\n```Terms can be lowercase, but need not be:\n```\n.ORACLE TABLE Coastal-Waters-Location\n```"
+            "name": "Details",
+            "value": "To perform an Action Roll, simply use the `ironsworn-action` command or one of its aliases. You may include any number of whole numbers, which will be counted as modifiers. Text is ignored, which allows you to add a description to your rolls:\n```\n.ironsworn-action Rolling to Compel the guard to let me pass by telling him I have business with the Prince. +2 Shadow and +1 for my Secure Advantage.```The command has a few aliases (`a`, `is`, and `act`). All you need are the numeric modifiers; the text is purely for flavour. All aliases function exactly the same:\n```\n.is Compelling the guard by lying: +2 Shadow, +1 Secure Advantage``````\n.act Compel +2 s +1 SA````+`'s can be omitted, as well as any text:\n```\n.a 2 1```You can put as much text, and as many modifiers, into a roll as Discord's 2,000-character limit will allow."
         }]
     }
 }
