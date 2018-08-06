@@ -18,19 +18,19 @@
         "aliases": ["ask", "oracle", "o"],
         "argAliases": {
             "is_oracleLookupTable": ["table", "t"],
-            "0": ["no-chance", "nc", "impossible"],
-            "10": ["small-chance", "sc"],
-            "25": ["unlikely", "ul"],
-            "50": ["50-50", "5050", "fifty-fifty", "f"],
-            "75": ["likely", "l"],
-            "90": ["almost-certain", "ac"],
-            "100": ["certain", "c"]
+            "0": ["n", "nc", "no-chance", "impossible"],
+            "10": ["s", "sc", "small-chance"],
+            "25": ["u", "ul", "unlikely"],
+            "50": ["f", "ff", "fifty-fifty", "50-50", "5050"],
+            "75": ["l", "likely"],
+            "90": ["a", "ac", "almost-certain"],
+            "100": ["c", "certain"]
         },
         "argLabels": {
             "0": "impossible",
             "10": "highly unlikely",
             "25": "unlikely",
-            "50": "50-50",
+            "50": "fifty-fifty",
             "75": "likely",
             "90": "almost certain"
         }
