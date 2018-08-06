@@ -573,7 +573,7 @@ function isOwner(user) {
 function embedTest(msg, _cmdKey, _args) {
     const embed = {
         'title': 'Discordsworn Help',
-        'description': 'This is **Discordsworn**, a dice rolling bot for _[Ironsworn](https://www.ironswornrpg.com/)_ and other systems. Feel free to [report a bug, request a feature](https://github.com/ribbanya/discordsworn/issues/new), or [check out the code](https://github.com/ribbanya/discordsworn) on GitHub!',
+        'description': 'This is **Discordsworn**, a dice rolling bot for _[Ironsworn](https://www.ironswornrpg.com/)_ and other systems. Feel free to [report a bug](https://github.com/ribbanya/discordsworn/issues/new), [request a feature](https://github.com/ribbanya/discordsworn/issues/new), or [check out the code](https://github.com/ribbanya/discordsworn) on GitHub!',
         'thumbnail': {
             'url': 'https://cdn.discordapp.com/avatars/469514510852423681/325889752f8d9a16ef8d17bb34f5d22c.png'
         },
@@ -584,7 +584,7 @@ function embedTest(msg, _cmdKey, _args) {
         },
         'fields': [{
             'name': 'Using Commands',
-            'value': 'To use a command, type `.` and then a command name from the list below.\n\nYou can also ping or directly message <@468051091637010445> (without the `.`):\n```@Discordsworn#4327 \nironsworn-action```'
+            'value': 'To use a command, type `.` and then a command name from the list below.\n\nYou can also ping <@468051091637010445> (without the `.`):\n```\n@Discordsworn#4327 ironsworn-action\n```… or directly message the bot:```ironsworn-action```'
         }]
     };
 
