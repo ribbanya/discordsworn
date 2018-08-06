@@ -601,5 +601,9 @@ const embed = {
 console.debug(JSON.stringify({ embed }));
 
 function embedTest(msg, _cmdKey, _args) {
-    msg.channel.send(msg.author.toString(), { embed });
+    let output = { embed };
+    if (_args && _args.length > 0) {
+        output = JSON.parse(_args.join(' '));
+    }
+    msg.channel.send(msg.author.toString(), output);
 }
