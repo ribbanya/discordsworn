@@ -9,29 +9,26 @@
         "title": "Ironsworn Action Roll",
         "description": "Performs an Action Roll from the _Ironsworn_ engine.",
         "help": {
-            "content": "@Robin",
-            "embed": {
-                "fields": [
-                {
-                    "name": "_Ironsworn_ Action Roll",
-                    "value": "Performs an Action Roll from the _Ironsworn_ engine.",
-                    "inline": true
-                },
-                {
-                    "name": "Aliases",
-                    "value": "`a`, `is`, `act`, `ironsworn-action`",
-                    "inline": true
-                },
-                {
-                    "name": "Quick Reference",
-                    "value": "```\n.is Sojourning into the town with +2 heart and +1 from Secure Advantage.\n``````\n.a 2 1```",
-                    "inline": true
-                },
-                {
-                    "name": "Details",
-                    "value": "To perform an Action Roll, simply use the `ironsworn-action` command or one of its aliases. You may include any number of whole numbers, which will be counted as modifiers. Text is ignored, which allows you to add a description to your rolls:\n```\n.ironsworn-action Rolling to Compel the guard to let me pass by telling him I have business with the Prince. +2 Shadow and +1 for my Secure Advantage.```The command has a few aliases (`a`, `is`, and `act`). All you need are the numeric modifiers; the text is purely for flavour. All aliases function exactly the same:\n```\n.is Compelling the guard by lying: +2 Shadow, +1 Secure Advantage``````\n.act Compel +2 s +1 SA````+`'s can be omitted, as well as any text:\n```\n.a 2 1```You can put as much text, and as many modifiers, into a roll as Discord's 2,000-character limit will allow."
-                }]
-            }
+            "fields": [
+            {
+                "name": "_Ironsworn_ Action Roll",
+                "value": "Performs an Action Roll from the _Ironsworn_ engine.",
+                "inline": true
+            },
+            {
+                "name": "Aliases",
+                "value": "`a`, `is`, `act`, `ironsworn-action`",
+                "inline": true
+            },
+            {
+                "name": "Quick Reference",
+                "value": "```\n.is Sojourning into the town with +2 heart and +1 from Secure Advantage.\n``````\n.a 2 1```",
+                "inline": true
+            },
+            {
+                "name": "Details",
+                "value": "To perform an Action Roll, simply use the `ironsworn-action` command or one of its aliases. You may include any number of whole numbers, which will be counted as modifiers. Text is ignored, which allows you to add a description to your rolls:\n```\n.ironsworn-action Rolling to Compel the guard to let me pass by telling him I have business with the Prince. +2 Shadow and +1 for my Secure Advantage.```The command has a few aliases (`a`, `is`, and `act`). All you need are the numeric modifiers; the text is purely for flavour. All aliases function exactly the same:\n```\n.is Compelling the guard by lying: +2 Shadow, +1 Secure Advantage``````\n.act Compel +2 s +1 SA````+`'s can be omitted, as well as any text:\n```\n.a 2 1```You can put as much text, and as many modifiers, into a roll as Discord's 2,000-character limit will allow."
+            }]
         },
         "aliases": ["a", "is", "act", "ironsworn-action"]
     },
@@ -105,7 +102,28 @@
     "aw_rollMoveDice": {
         "title": "Apocalypse World Move Roll",
         "description": "Performs a Move roll from the _Apocalypse World_ engine.",
-        "helpText": "**__Apocalypse World Move Roll__**\nPerforms a Move roll from the _Apocalypse World_ engine.\n\nTo perform a Move, simply use the `apocalypse-world-move` command or one of its aliases. You may include any number of whole numbers, which will be counted as modifiers. Text is ignored, which allows you to add a description to your rolls:\n```.apocalypse-world-move Rolling to Manipulate the guard to let me pass by telling him I have business with the gang leader. +2 Hot and +1 Forward from earlier.```\nThe command has a few aliases (`aw`, `move`, and `m`). All you need are the numeric modifiers; the text is purely for flavour. All aliases function exactly the same:\n```.aw Manipulating the guard by lying: +2 Hot, +1 Forward```\n```.move Manipulate +2 h +1 F```\n`+`'s can be omitted, as well as any text:\n```.m 2 1```\nYou can put as much text, and as many modifiers, into a roll as Discord's 2,000-character limit will allow.",
+        "help": {
+            "fields": [
+            {
+                "name": "_Apocalypse World_ Move Roll",
+                "value": "Performs a Move roll from the _Apocalypse World_ engine.",
+                "inline": true
+            },
+            {
+                "name": "Aliases",
+                "value": "`m`, `aw`, `move`, `apocalypse-world-move`",
+                "inline": true
+            },
+            {
+                "name": "Quick Reference",
+                "value": "```\n.aw Going Aggro on the bartender with +2 hard and +1 forward.\n``````\n.m 2 1```",
+                "inline": true
+            },
+            {
+                "name": "Details",
+                "value": "To perform a Move, simply use the `apocalypse-world-move` command or one of its aliases. You may include any number of whole numbers, which will be counted as modifiers. Text is ignored, which allows you to add a description to your rolls:\n```.apocalypse-world-move Rolling to Manipulate the guard to let me pass by telling him I have business with the gang leader. +2 hot and +1 forward from earlier.```The command has a few aliases (`aw`, `move`, and `m`). All you need are the numeric modifiers; the text is purely for flavour. All aliases function exactly the same:\n```.aw Manipulating the guard by lying: +2 hot, +1 forward``````.move Manipulate +2 h +1 F````+`'s can be omitted, as well as any text:\n```.m 2 1```You can put as much text, and as many modifiers, into a roll as Discord's 2,000-character limit will allow."
+            }]
+        },
         "aliases": ["m", "aw", "move", "apocalypse-world-move"]
     },
     "rollDice": {
