@@ -258,7 +258,7 @@ function parseMsg(msg) {
         args: args,
         cmdKey: cmdKey,
         content: content
-    }
+    };
 }
 
 function onMsg(msg) {
@@ -610,27 +610,46 @@ const embed = {
     },
     {
         'name': '_Ask the Oracle_\n`o`, `oracle`, `ask`',
-        'value': '_Asks the Oracle_ for inspiration.',
+        'value': '_Asks the Oracle_ for inspiration.'
     },
     {
         'name': '_Ironsworn_ Action Roll\n`a`, `is`, `act`, `ironsworn-action`',
         'value': 'Performs an Action Roll from the _Ironsworn_ engine.'
     }]
 };
-// console.debug(JSON.stringify({ embed }));
+console.debug(JSON.stringify({ embed }));
 
 const recentEmbeds = {};
 
-function embedTest(msg, _parsedMsg) {
+function embedError(error) {
+    return {
+        title: 'Error',
+        description: '```\n' + error.message + '\n```'
+    };
+}
 
-    msg.channel.send(msg.author.toString(), { embed })
+function parseOptionsJson(json) {
+    try {
+        return JSON.parse(json);
+    } catch (error) {
+        return { embed: embedError(error) };
+    }
+}
+
+function embedTest(msg, parsedMsg) {
+    let options;
+    if (parsedMsg.content) {
+        options = parseOptionsJson(parsedMsg.content);
+    }
+    else options = { embed: embed };
+
+    msg.channel.send(options.content || msg.author.toString(), options)
         .then((v) => {
             if (!(v instanceof discord.Message)) {
                 throw v;
             }
             recentEmbeds[msg.id] = v;
         });
-
 }
 
 function onMsgUpdate(oldMsg, newMsg) {
@@ -655,13 +674,8 @@ function onMsgUpdate(oldMsg, newMsg) {
         description: '```\n' + error.message + '\n```'
     });
 
-    let newEmbed;
-    try {
-        newEmbed = JSON.parse(content);
-    } catch (error) {
-        newEmbed = embedError(error);
-    }
-    target.edit(null, { embed: newEmbed })
+    const options = parseOptionsJson(content);
+    target.edit(options.content || target.content, options)
         .catch(error =>
             target.channel.send(target.author.toString(), {
                 embed: embedError(error)
