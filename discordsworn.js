@@ -231,6 +231,7 @@ function parseMsg(msg) {
     if (msg.author.id === client.user.id) return null;
 
     const mention = new RegExp(`<@.?${client.user.id}>`, 'g');
+
     let content = msg.content.replace(mention, '')
         .replace(/ {2,}/, ' ').trim();
     {
@@ -261,11 +262,10 @@ function parseMsg(msg) {
 }
 
 function onMsg(msg) {
-    const pm = parseMsg(msg);
-    if (!pm) return;
+    const parsedMsg = parseMsg(msg);
+    if (!parsedMsg) return;
 
-    const { args, cmdKey, content } = pm;
-    const cmdFn = cmdJson.cmdJumps[cmdKey];
+    const cmdFn = cmdJson.cmdJumps[parsedMsg.cmdKey];
 
     if (!cmdFn) return;
 
@@ -282,12 +282,11 @@ function onMsg(msg) {
     }
 
     try {
-        msg.content = content;
-        (cmdFn)(msg, cmdKey, args.slice(1));
+        (cmdFn)(msg, parsedMsg);
         return;
     } catch (error) {
         let output = `${msg.author} Error: ${error.message}.`;
-        const helpOutput = errorHelp(cmdKey);
+        const helpOutput = errorHelp(parsedMsg.cmdKey);
         if (helpOutput) output += `\n${helpOutput}`;
         msg.channel.send(output);
         console.error(`Error encountered while handling '${msg.content}':`, error);
@@ -304,11 +303,11 @@ function errorHelp(cmdKey, args) {
     return `Type \`${prefixes[0]}${helpAlias} ${cmdKey}${args}\` for help.`;
 }
 
-function is_askTheOracle(msg, cmdKey, args) {
+function is_askTheOracle(msg, parsedMsg) {
     const chan = msg.channel;
     const data = cmdJson.cmdData[is_askTheOracle.name];
-    const argJumps = data.argJumps;
-    const argLabels = data.argLabels;
+    const { args, cmdKey } = parsedMsg;
+    const { argJumps, argLabels } = data;
 
     let invalidArgsMsg =
         msg.author +
@@ -421,7 +420,8 @@ function matchArg(cmdFn, argAlias, argFn) {
     return resolveArg(cmdFn, argAlias) == argFn.name;
 }
 
-function rollDice(msg, _cmdKey, args) {
+function rollDice(msg, parsedMsg) {
+    const { args } = parsedMsg;
     const expression = args.join('');
     const r = new Dice().execute(expression);
     msg.channel.send(r.text);
@@ -436,7 +436,8 @@ function rInt(min, max, count = 1) {
     return Array.apply(null, Array(count)).map(() => rInt(min, max));
 }
 
-function is_rollActionDice(msg, cmdKey, args) {
+function is_rollActionDice(msg, parsedMsg) {
+    const { args } = parsedMsg;
     const chan = msg.channel;
     const mods = args.reduce((m, s) => {
         const i = parseInt(s);
@@ -470,7 +471,8 @@ function is_rollActionDice(msg, cmdKey, args) {
     chan.send(result);
 }
 
-function aw_rollMoveDice(msg, cmdKey, args) {
+function aw_rollMoveDice(msg, parsedMsg) {
+    const { args } = parsedMsg;
     const chan = msg.channel;
     const mods = args.reduce((m, s) => {
         const i = parseInt(s);
@@ -500,7 +502,7 @@ function login() {
     return client.login(tokens.discord.botAccount);
 }
 
-function reconnectDiscordClient(msg, _cmdKey, _args) {
+function reconnectDiscordClient(msg, _parsedMsg) {
     const a = msg.author;
 
     console.info(`Reset request received from ${a.id} (${a.username}#${a.discriminator}).`);
@@ -511,7 +513,7 @@ function reconnectDiscordClient(msg, _cmdKey, _args) {
         .then(() => login());
 }
 
-function exitProcess(msg, _cmdKey, _args) {
+function exitProcess(msg, _parsedMsg) {
     const a = msg.author;
 
     console.info(`Shutdown request received from ${a.id} (${a.username}#${a.discriminator}).`);
@@ -556,7 +558,8 @@ const helpSymbols = (() => {
     }, []);
 })();
 
-function helpMessage(msg, _cmdKey, args) {
+function helpMessage(msg, parsedMsg) {
+    const { args } = parsedMsg;
     let helpFn = args && args.length > 0 ?
         cmdJson.cmdJumps[args[0]] : helpMessage;
 
@@ -618,7 +621,8 @@ const embed = {
 
 const recentEmbeds = {};
 
-function embedTest(msg, _cmdKey, _args) {
+function embedTest(msg, _parsedMsg) {
+
     msg.channel.send(msg.author.toString(), { embed })
         .then((v) => {
             if (!(v instanceof discord.Message)) {
