@@ -3,6 +3,7 @@ const fs = require('fs');
 const ws = require('ws');
 const dateFormat = require('dateformat');
 const Dice = require('node-dice-js');
+const assert = require('assert');
 
 const client = new discord.Client(); {
     client.on('ready', function onReady() { console.log('Ready.'); });
@@ -16,6 +17,7 @@ const client = new discord.Client(); {
             }
         }
     });
+    client.on('messageUpdate', onMsgUpdate);
 }
 
 const supportedCommands = [
@@ -225,9 +227,8 @@ function parseOraclesJson(json) {
     return json;
 }
 
-
-function onMsg(msg) {
-    if (msg.author.id === client.user.id) return;
+function parseMsg(msg) {
+    if (msg.author.id === client.user.id) return null;
 
     const mention = new RegExp(`<@.?${client.user.id}>`, 'g');
     let content = msg.content.replace(mention, '')
@@ -244,11 +245,26 @@ function onMsg(msg) {
             msg.isMentioned(client.user) ||
             msg.channel instanceof discord.DMChannel;
 
-        if (!relevant) return;
+        if (!relevant) return null;
     }
 
-    const args = content.split(' ');
+    let args = content.split(' ');
     const cmdKey = args[0].toLowerCase();
+    args = args.slice(1);
+    content = args.join(' ');
+
+    return {
+        args: args,
+        cmdKey: cmdKey,
+        content: content
+    }
+}
+
+function onMsg(msg) {
+    const pm = parseMsg(msg);
+    if (!pm) return;
+
+    const { args, cmdKey, content } = pm;
     const cmdFn = cmdJson.cmdJumps[cmdKey];
 
     if (!cmdFn) return;
@@ -598,8 +614,52 @@ const embed = {
         'value': 'Performs an Action Roll from the _Ironsworn_ engine.'
     }]
 };
-console.debug(JSON.stringify({ embed }));
+// console.debug(JSON.stringify({ embed }));
+
+const recentEmbeds = {};
 
 function embedTest(msg, _cmdKey, _args) {
-    msg.channel.send(msg.author.toString(), { embed });
+    msg.channel.send(msg.author.toString(), { embed })
+        .then((v) => {
+            if (!(v instanceof discord.Message)) {
+                throw v;
+            }
+            recentEmbeds[msg.id] = v;
+        });
+
+}
+
+function onMsgUpdate(oldMsg, newMsg) {
+    assert(oldMsg.id === newMsg.id);
+    const target = recentEmbeds[oldMsg.id];
+    if (!target) return;
+    const targetEmbed = target.embeds.find(e => e.type === 'rich');
+    if (!targetEmbed) return;
+
+    const pm = parseMsg(newMsg);
+    if (!pm) return;
+
+    const { cmdKey } = pm;
+    let { content } = pm;
+
+    if (cmdJson.cmdJumps[cmdKey] !== embedTest) {
+        content = newMsg.content;
+    }
+
+    const embedError = (error) => ({
+        title: 'Error',
+        description: '```\n' + error.message + '\n```'
+    });
+
+    let newEmbed;
+    try {
+        newEmbed = JSON.parse(content);
+    } catch (error) {
+        newEmbed = embedError(error);
+    }
+    target.edit(null, { embed: newEmbed })
+        .catch(error =>
+            target.channel.send(target.author.toString(), {
+                embed: embedError(error)
+            }));
 }
