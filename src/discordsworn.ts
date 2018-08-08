@@ -1,4 +1,4 @@
-﻿﻿import { Client, DMChannel, Message } from 'discord.js';
+﻿﻿import { User, RichEmbed, Client, DMChannel, Message } from 'discord.js';
 import * as fs from 'fs';
 import * as ws from 'ws';
 import * as dateFormat from 'dateformat';
@@ -20,16 +20,19 @@ const client = new Client(); {
     client.on('messageUpdate', onMsgUpdate);
 }
 
+interface JumpTable {
+    [key: string]: Function
+}
 const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
     aw_rollMoveDice,
     rollDice,
     helpMessage,
     reconnectDiscordClient, exitProcess, embedTest
-].reduce((sc, fn) => {
-    sc[fn.name] = fn;
+].reduce((sc: JumpTable, fn: Function): JumpTable => {
+    sc[fn.name as string] = fn;
     return sc;
-}, {}); //TODO separate module
+}, {} as JumpTable); //TODO separate module
 
 const supportedArgs = { //TODO: supportedCommands[cmdKey].supportedArgs
     [is_askTheOracle.name]: [
@@ -42,7 +45,7 @@ const supportedOracles = [null, 'multipleColumns', 'nested'];
 
 const prefixes = ['.']; //TODO user settings
 
-function syncParseJson(filename) {
+function syncParseJson(filename: string) {
     return JSON.parse(fs.readFileSync(filename, 'utf8'));
 }
 
@@ -57,14 +60,18 @@ function formatArg(arg) {
     return arg.toLowerCase().replace(/\s+/g, '-');
 }
 
-function parseCmdJson(json) {
-    const cmdJumps = {};
-    const cmdData = {};
+interface CommandJson {
+    cmdData: any, //TODO
+    cmdJumps: any // TODO
+}
+function parseCmdJson(json: any /* TODO */): CommandJson {
+    const cmdJumps: JumpTable = {};
+    const cmdData: any = {};
 
-    const isMissing = (array) => !array || array.length < 1;
-    const keysIncludes = (object, key) => Object.keys(object).includes(key);
+    const isMissing = (array: any[]) => !array || array.length < 1;
+    const keysIncludes = (object: object, key: string) => Object.keys(object).includes(key);
 
-    const parseJumps = (cmdKey) => {
+    const parseJumps = (cmdKey: string) => {
 
         const aliases = json[cmdKey].aliases;
         const listener = supportedCommands[cmdKey];
@@ -76,7 +83,7 @@ function parseCmdJson(json) {
             );
             cmdJumps[cmdKey] = listener;
         } else {
-            aliases.forEach(alias => {
+            aliases.forEach((alias: string) => {
                 if (cmdJumps.hasOwnProperty(alias)) {
                     console.warn(`'${cmdKey}' is attempting to assign duplicate alias '${alias}'. Skipping.`);
                     return;
@@ -87,14 +94,20 @@ function parseCmdJson(json) {
         }
     };
 
-    const parseArgLabels = (cmdKey) => json[cmdKey].argLabels || null;
+    const parseArgLabels = (cmdKey: string) => json[cmdKey].argLabels || null;
 
-    const parseArgJumps = (cmdKey) => {
+    interface ArgJumpTable {
+        cmdData: any, //TODO
+        cmdJumps: any //TODO
+    }
+    const parseArgJumps = (cmdKey: string): ArgJumpTable | null => {
         const group = json[cmdKey].argAliases;
 
         if (isMissing(group)) return null;
 
-        const argJumps = {};
+        const argJumps: ArgJumpTable = {
+            cmdData: null, cmdJumps: 'null' as string
+        };
 
         const keys = Object.keys(group);
         keys.forEach(key => {
@@ -107,7 +120,7 @@ function parseCmdJson(json) {
                 );
                 return;
             }
-            list.forEach(alias => {
+            list.forEach((alias: string) => {
                 if (argJumps.hasOwnProperty(alias)) {
                     console.warn(`'${cmdKey}.${key}' is attempting to assign duplicate alias '${alias}'. Skipping.`);
                     return;
@@ -118,8 +131,7 @@ function parseCmdJson(json) {
         });
         return argJumps;
     };
-
-    Object.keys(json).forEach(cmdKey => {
+    Object.keys(json).forEach((cmdKey: string) => {
         const cmd = json[cmdKey];
         if (!keysIncludes(supportedCommands, cmdKey)) {
             console.warn(
@@ -140,14 +152,16 @@ function parseCmdJson(json) {
         cmdJumps: cmdJumps
     };
 }
-
-function parseOraclesJson(json) {
+interface AnyJson { //TODO
+    [key: string]: any
+}
+function parseOraclesJson(json: AnyJson) {
     json.map = {};
     root: for (let i = 0; i < json.length; i++) {
         const oracle = json[i];
         oracle.type = oracle.type || null;
         let identifier = `Oracle at index ${i}`;
-        const warn = (s) => console.warn(`${identifier}` + s + ' Skipping.');
+        const warn = (s: string) => console.warn(`${identifier}` + s + ' Skipping.');
         {
             if (!oracle.title) {
                 warn(' is missing a title field.');
@@ -199,7 +213,7 @@ function parseOraclesJson(json) {
             warn(' has an \'aliases\' definition but it is not an Array.');
             continue;
         }
-        const mapOracle = (s) => {
+        const mapOracle = (s: string) => {
             if (json.map.hasOwnProperty(s)) {
                 warn(` is attempting to assign duplicate alias '${s}'. Skipping.`);
                 return;
@@ -211,13 +225,17 @@ function parseOraclesJson(json) {
         const title = formatArg(oracle.title);
         mapOracle(title);
         if (oracle.aliases && oracle.aliases.length > 0) {
-            oracle.aliases.forEach(e => mapOracle(e));
+            oracle.aliases.forEach((e: string) => mapOracle(e));
         }
     }
     return json;
 }
-
-function parseMsg(msg) {
+interface ParsedMessage {
+    args: string[],
+    cmdKey: string,
+    content: string
+}
+function parseMsg(msg: Message): ParsedMessage | null {
     if (msg.author.id === client.user.id) return null;
 
     const mention = new RegExp(`<@.?${client.user.id}>`, 'g');
@@ -426,7 +444,7 @@ function rInt(min, max, count = 1) {
     return Array.apply(null, Array(count)).map(() => rInt(min, max));
 }
 
-function is_rollActionDice(msg, parsedMsg) {
+function is_rollActionDice(msg: Message, parsedMsg: ParsedMessage) {
     const { args } = parsedMsg;
     const chan = msg.channel;
     const mods = args.reduce((m, s) => {
@@ -435,7 +453,7 @@ function is_rollActionDice(msg, parsedMsg) {
     }, 0);
     const challenge = d(10, 2);
     const action = d(6);
-    const challengeStr = challenge.map(n => (action + mods) > n ? `__${n}__` : n);
+    const challengeStr = challenge.map((n: number) => (action + mods) > n ? `__${n}__` : n);
     const modStr = args.reduce((s, n) => {
         const i = parseInt(n);
         if (!i && i !== 0) return s;
@@ -516,8 +534,8 @@ function exitProcess(msg, _parsedMsg) {
 
 
 const helpSymbols = (() => {
-    const symbols = {
-        helpList: (msg) => {
+    const symbols: { [key: string]: Function } = {
+        helpList: (msg: Message) => {
             return Object.keys(cmdJson.cmdData).reduce((s, cmdKey) => {
                 // if (cmdKey === helpMessage.name) return s;
 
@@ -534,7 +552,7 @@ const helpSymbols = (() => {
                 return s + `${aliases}\n${marker}**${cmd.title}**\n    ${cmd.description}`;
             }, '');
         },
-        selfPing: (_msg) => client.user.toString()
+        selfPing: (_msg: Message) => client.user.toString()
 
     };
 
@@ -575,11 +593,11 @@ function helpMessage(msg, parsedMsg) {
     msg.channel.send(output);
 }
 
-function isOwner(user) {
+function isOwner(user: User) {
     return user.id === tokens.discord.ownerId;
 }
 
-const recentEmbeds = {};
+const recentEmbeds: { [key: string]: Message } = {};
 
 function embedError(error) {
     return {
@@ -588,7 +606,7 @@ function embedError(error) {
     };
 }
 
-function parseOptionsJson(json) {
+function parseOptionsJson(json: string) {
     try {
         return JSON.parse(json);
     } catch (error) {
@@ -596,7 +614,7 @@ function parseOptionsJson(json) {
     }
 }
 
-function embedTest(msg, parsedMsg) {
+function embedTest(msg: Message, parsedMsg: ParsedMessage) {
     const options = parseOptionsJson(parsedMsg.content);
     msg.channel.send(options.content || msg.author.toString(), options)
         .then((v) => {
@@ -607,7 +625,7 @@ function embedTest(msg, parsedMsg) {
         });
 }
 
-function onMsgUpdate(oldMsg, newMsg) {
+function onMsgUpdate(oldMsg: Message, newMsg: Message) {
     assert(oldMsg.id === newMsg.id);
     const target = recentEmbeds[oldMsg.id];
     if (!target) return;
