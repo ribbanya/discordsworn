@@ -12,7 +12,12 @@
         "curly": [
             "error", "multi-line"
         ],
-        "indent": ["error", 4, { "SwitchCase": 0 }],
+        "indent": ["error", 4, {
+            "SwitchCase": 0,
+            "CallExpression": {
+                "arguments": 2
+            }
+        }],
         "linebreak-style": ["error", "windows"],
         "quotes": ["error", "single"],
         "semi": ["error", "always"],

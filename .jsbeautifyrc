@@ -1,7 +1,6 @@
 {
     "js": {
         "jslint_happy": true,
-        "good_stuff": true,
         "brace_style": "none,preserve-inline"
     }
 }
