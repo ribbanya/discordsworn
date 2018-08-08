@@ -15,7 +15,7 @@
         "email": "ribbanya@gmail.com",
         "url": "https://github.com/ribbanya"
     },
-    "main": "discordsworn.js",
+    "main": "./dist/discordsworn.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
