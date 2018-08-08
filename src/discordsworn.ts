@@ -1,8 +1,9 @@
-﻿import { Client, DMChannel } from 'discord.js';
+﻿﻿import { Client, DMChannel, Message } from 'discord.js';
 import * as fs from 'fs';
 import * as ws from 'ws';
 import * as dateFormat from 'dateformat';
 import * as Dice from 'node-dice-js';
+import * as assert from 'assert';
 
 const client = new Client(); {
     client.on('ready', function onReady() { console.log('Ready.'); });
@@ -16,6 +17,7 @@ const client = new Client(); {
             }
         }
     });
+    client.on('messageUpdate', onMsgUpdate);
 }
 
 const supportedCommands = [
@@ -23,7 +25,7 @@ const supportedCommands = [
     aw_rollMoveDice,
     rollDice,
     helpMessage,
-    reconnectDiscordClient, exitProcess
+    reconnectDiscordClient, exitProcess, embedTest
 ].reduce((sc, fn) => {
     sc[fn.name] = fn;
     return sc;
@@ -126,21 +128,11 @@ function parseCmdJson(json) {
             return;
         }
         parseJumps(cmdKey);
-        const argJumps = parseArgJumps(cmdKey);
-        const argLabels = parseArgLabels(cmdKey);
-        if (argJumps || argLabels || !isMissing(cmd.aliases) ||
-            cmd.title || cmd.helpText || cmd.description ||
-            cmd.requiresOwner) {
-            cmdData[cmdKey] = {};
-            const data = cmdData[cmdKey];
-            if (argJumps) data.argJumps = argJumps;
-            if (argLabels) data.argLabels = argLabels;
-            if (!isMissing(cmd.aliases)) data.aliases = cmd.aliases;
-            if (cmd.title) data.title = cmd.title;
-            if (cmd.helpText) data.helpText = cmd.helpText;
-            if (cmd.description) data.description = cmd.description;
-            if (cmd.requiresOwner) data.requiresOwner = cmd.requiresOwner;
-        }
+        cmdData[cmdKey] = {};
+        const data = cmdData[cmdKey];
+        data.argJumps = parseArgJumps(cmdKey);
+        data.argLabels = parseArgLabels(cmdKey);
+        Object.assign(data, cmd);
     });
 
     return {
@@ -225,11 +217,11 @@ function parseOraclesJson(json) {
     return json;
 }
 
-
-function onMsg(msg) {
-    if (msg.author.id === client.user.id) return;
+function parseMsg(msg) {
+    if (msg.author.id === client.user.id) return null;
 
     const mention = new RegExp(`<@.?${client.user.id}>`, 'g');
+
     let content = msg.content.replace(mention, '')
         .replace(/ {2,}/, ' ').trim();
     {
@@ -244,12 +236,26 @@ function onMsg(msg) {
             msg.isMentioned(client.user) ||
             msg.channel instanceof DMChannel;
 
-        if (!relevant) return;
+        if (!relevant) return null;
     }
 
-    const args = content.split(' ');
+    let args = content.split(' ');
     const cmdKey = args[0].toLowerCase();
-    const cmdFn = cmdJson.cmdJumps[cmdKey];
+    args = args.slice(1);
+    content = args.join(' ');
+
+    return {
+        args: args,
+        cmdKey: cmdKey,
+        content: content
+    };
+}
+
+function onMsg(msg) {
+    const parsedMsg = parseMsg(msg);
+    if (!parsedMsg) return;
+
+    const cmdFn = cmdJson.cmdJumps[parsedMsg.cmdKey];
 
     if (!cmdFn) return;
 
@@ -266,12 +272,11 @@ function onMsg(msg) {
     }
 
     try {
-        msg.content = content;
-        (cmdFn)(msg, cmdKey, args.slice(1));
+        (cmdFn)(msg, parsedMsg);
         return;
     } catch (error) {
         let output = `${msg.author} Error: ${error.message}.`;
-        const helpOutput = errorHelp(cmdKey, undefined);
+        const helpOutput = errorHelp(parsedMsg.cmdKey, undefined);
         if (helpOutput) output += `\n${helpOutput}`;
         msg.channel.send(output);
         console.error(`Error encountered while handling '${msg.content}':`, error);
@@ -287,11 +292,11 @@ function errorHelp(cmdKey, args) {
     return `Type \`${prefixes[0]}${helpAlias} ${cmdKey}${args}\` for help.`;
 }
 
-function is_askTheOracle(msg, cmdKey, args) {
+function is_askTheOracle(msg, parsedMsg) {
     const chan = msg.channel;
     const data = cmdJson.cmdData[is_askTheOracle.name];
-    const argJumps = data.argJumps;
-    const argLabels = data.argLabels;
+    const { args, cmdKey } = parsedMsg;
+    const { argJumps, argLabels } = data;
 
     let invalidArgsMsg =
         msg.author +
@@ -404,7 +409,8 @@ function matchArg(cmdFn, argAlias, argFn) {
     return resolveArg(cmdFn, argAlias) == argFn.name;
 }
 
-function rollDice(msg, _cmdKey, args) {
+function rollDice(msg, parsedMsg) {
+    const { args } = parsedMsg;
     const expression = args.join('');
     const r = new Dice().execute(expression);
 
@@ -420,7 +426,8 @@ function rInt(min, max, count = 1) {
     return Array.apply(null, Array(count)).map(() => rInt(min, max));
 }
 
-function is_rollActionDice(msg, cmdKey, args) {
+function is_rollActionDice(msg, parsedMsg) {
+    const { args } = parsedMsg;
     const chan = msg.channel;
     const mods = args.reduce((m, s) => {
         const i = parseInt(s);
@@ -454,7 +461,8 @@ function is_rollActionDice(msg, cmdKey, args) {
     chan.send(result);
 }
 
-function aw_rollMoveDice(msg, cmdKey, args) {
+function aw_rollMoveDice(msg, parsedMsg) {
+    const { args } = parsedMsg;
     const chan = msg.channel;
     const mods = args.reduce((m, s) => {
         const i = parseInt(s);
@@ -484,7 +492,7 @@ function login() {
     return client.login(tokens.discord.botAccount);
 }
 
-function reconnectDiscordClient(msg, _cmdKey, _args) {
+function reconnectDiscordClient(msg, _parsedMsg) {
     const a = msg.author;
 
     console.info(`Reset request received from ${a.id} (${a.username}#${a.discriminator}).`);
@@ -495,7 +503,7 @@ function reconnectDiscordClient(msg, _cmdKey, _args) {
         .then(() => login());
 }
 
-function exitProcess(msg, _cmdKey, _args) {
+function exitProcess(msg, _parsedMsg) {
     const a = msg.author;
 
     console.info(`Shutdown request received from ${a.id} (${a.username}#${a.discriminator}).`);
@@ -540,7 +548,8 @@ const helpSymbols = (() => {
     }, []);
 })();
 
-function helpMessage(msg, _cmdKey, args) {
+function helpMessage(msg, parsedMsg) {
+    const { args } = parsedMsg;
     let helpFn = args && args.length > 0 ?
         cmdJson.cmdJumps[args[0]] : helpMessage;
 
@@ -568,4 +577,62 @@ function helpMessage(msg, _cmdKey, args) {
 
 function isOwner(user) {
     return user.id === tokens.discord.ownerId;
+}
+
+const recentEmbeds = {};
+
+function embedError(error) {
+    return {
+        title: 'Error',
+        description: '```\n' + error.message + '\n```'
+    };
+}
+
+function parseOptionsJson(json) {
+    try {
+        return JSON.parse(json);
+    } catch (error) {
+        return { embed: embedError(error) };
+    }
+}
+
+function embedTest(msg, parsedMsg) {
+    const options = parseOptionsJson(parsedMsg.content);
+    msg.channel.send(options.content || msg.author.toString(), options)
+        .then((v) => {
+            if (!(v instanceof Message)) {
+                throw v;
+            }
+            recentEmbeds[msg.id] = v;
+        });
+}
+
+function onMsgUpdate(oldMsg, newMsg) {
+    assert(oldMsg.id === newMsg.id);
+    const target = recentEmbeds[oldMsg.id];
+    if (!target) return;
+    const targetEmbed = target.embeds.find(e => e.type === 'rich');
+    if (!targetEmbed) return;
+
+    const pm = parseMsg(newMsg);
+    if (!pm) return;
+
+    const { cmdKey } = pm;
+    let { content } = pm;
+
+    if (cmdJson.cmdJumps[cmdKey] !== embedTest) {
+        content = newMsg.content;
+    }
+
+    const embedError = (error) => ({
+        title: 'Error',
+        description: '```\n' + error.message + '\n```'
+    });
+
+    const options = parseOptionsJson(content);
+    target.edit(options.content || target.content, options)
+        .catch(error =>
+            target.channel.send(target.author.toString(), {
+                embed: embedError(error)
+            }));
 }
