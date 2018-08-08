@@ -128,21 +128,11 @@ function parseCmdJson(json) {
             return;
         }
         parseJumps(cmdKey);
-        const argJumps = parseArgJumps(cmdKey);
-        const argLabels = parseArgLabels(cmdKey);
-        if (argJumps || argLabels || !isMissing(cmd.aliases) ||
-            cmd.title || cmd.help || cmd.description ||
-            cmd.requiresOwner) {
-            cmdData[cmdKey] = {};
-            const data = cmdData[cmdKey];
-            if (argJumps) data.argJumps = argJumps;
-            if (argLabels) data.argLabels = argLabels;
-            if (!isMissing(cmd.aliases)) data.aliases = cmd.aliases;
-            if (cmd.title) data.title = cmd.title;
-            if (cmd.help) data.help = cmd.help;
-            if (cmd.description) data.description = cmd.description;
-            if (cmd.requiresOwner) data.requiresOwner = cmd.requiresOwner;
-        }
+        cmdData[cmdKey] = {};
+        const data = cmdData[cmdKey];
+        data.argJumps = parseArgJumps(cmdKey);
+        data.argLabels = parseArgLabels(cmdKey);
+        Object.assign(data, cmd);
     });
 
     return {
