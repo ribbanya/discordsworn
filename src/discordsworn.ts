@@ -21,8 +21,9 @@ const client = new Client(); {
     client.on('messageUpdate', onMsgUpdate);
 }
 
+type CommandFunction = (msg: Message, parsedMsg: ParsedMessage) => void;
 interface JumpTable {
-    [key: string]: Function
+    [key: string]: CommandFunction
 }
 const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
@@ -30,7 +31,7 @@ const supportedCommands = [
     rollDice,
     helpMessage,
     reconnectDiscordClient, exitProcess, embedTest
-].reduce((sc: JumpTable, fn: Function): JumpTable => {
+].reduce((sc: JumpTable, fn: CommandFunction): JumpTable => {
     sc[fn.name as string] = fn;
     return sc;
 }, {} as JumpTable); //TODO separate module
@@ -57,7 +58,7 @@ const cmdJson = parseCmdJson(syncParseJson('commands.json'));
 
 login();
 
-function formatArg(arg) {
+function formatArg(arg: string) {
     return arg.toLowerCase().replace(/\s+/g, '-');
 }
 
@@ -270,7 +271,7 @@ function parseMsg(msg: Message): ParsedMessage | null {
     };
 }
 
-function onMsg(msg) {
+function onMsg(msg: Message) {
     const parsedMsg = parseMsg(msg);
     if (!parsedMsg) return;
 
@@ -304,14 +305,14 @@ function onMsg(msg) {
 const helpAlias = Object.entries(cmdJson.cmdJumps)
     .find(kvp => kvp[1] === helpMessage)[0];
 
-function errorHelp(cmdKey, args) {
+function errorHelp(cmdKey: string, args?: string[]) {
     if (!helpAlias) return null;
-    if (args && args.length > 0) args = ` ${args.join(' ')}`;
-    else args = '';
-    return `Type \`${prefixes[0]}${helpAlias} ${cmdKey}${args}\` for help.`;
+    const argStr: string = args && args.length > 0 ?
+        ` ${args.join(' ')}` : '';
+    return `Type \`${prefixes[0]}${helpAlias} ${cmdKey}${argStr}\` for help.`;
 }
 
-function is_askTheOracle(msg, parsedMsg) {
+function is_askTheOracle(msg: Message, parsedMsg: ParsedMessage) {
     const chan = msg.channel;
     const data = cmdJson.cmdData[is_askTheOracle.name];
     const { args, cmdKey } = parsedMsg;
@@ -358,7 +359,7 @@ function is_askTheOracle(msg, parsedMsg) {
     chan.send(output);
 }
 
-function is_oracleLookupTable(msg, cmdKey, args, tableAlias) {
+function is_oracleLookupTable(msg: Message, cmdKey: string, args: string[], tableAlias: string) {
     const oracleNotFoundMsg =
         'Please specify an Oracle from the list:\n' +
         Object.keys(oracles.map).map(s => '`' + s + '`').join(', ');
@@ -387,8 +388,13 @@ function is_oracleLookupTable(msg, cmdKey, args, tableAlias) {
     const comment = args.length > 1 ? args.slice(1).join(' ') : null;
     if (comment) output += `"${comment}"\n`;
 
-    const lookup = (results: object, roll: string): string | undefined => Object.keys(results).find(k => k >= roll);
+    const lookup = (results: object /* TODO */, roll: string): string | undefined =>
+        Object.keys(results).find((k: string) => k >= roll);
     let key = lookup(oracle.results, roll);
+
+    const keyNotFoundMsg = (roll: string) => `${roll} was not found among ${oracle.title}'s keys.`;
+
+    if (!key) throw keyNotFoundMsg(roll);
     const value = oracle.results[key];
     const list: string[] = [];
     switch (oracle.type) {
@@ -411,6 +417,7 @@ function is_oracleLookupTable(msg, cmdKey, args, tableAlias) {
             roll = d(value.d ? value.d : 100); //TODO: Accept nested "d"
             output += `    **${value.title}** vs. **${roll}**…\n`;
             key = lookup(value.results, roll);
+            if (!key) throw keyNotFoundMsg(roll);
             output += `    _${value.prompt}_\n` +
                 `${msg.author} **${value.results[key]}**.`;
             break;
@@ -420,15 +427,15 @@ function is_oracleLookupTable(msg, cmdKey, args, tableAlias) {
     msg.channel.send(output);
 }
 
-function resolveArg(cmdFn, argAlias) {
+function resolveArg(cmdFn: CommandFunction, argAlias: string) {
     return cmdJson.cmdData[cmdFn.name].argJumps[argAlias.toLowerCase()];
 }
 
-function matchArg(cmdFn, argAlias, argFn) {
+function matchArg(cmdFn: CommandFunction, argAlias: string, argFn: Function /* TODO */) {
     return resolveArg(cmdFn, argAlias) == argFn.name;
 }
 
-function rollDice(msg, parsedMsg) {
+function rollDice(msg: Message, parsedMsg: ParsedMessage) {
     const { args } = parsedMsg;
     const expression = args.join('');
     const r = new Dice().execute(expression);
@@ -436,11 +443,11 @@ function rollDice(msg, parsedMsg) {
     msg.channel.send(r.outcomes[0].rolls.toString());
 }
 
-function d(sides, count = 1) {
+function d(sides: number, count: number = 1) {
     return rInt(1, sides, count);
 }
 
-function rInt(min, max, count = 1) {
+function rInt(min: number, max: number, count: number = 1) {
     if (count == 1) return Math.floor(Math.random() * (max - min + 1)) + min;
     return Array.apply(null, Array(count)).map(() => rInt(min, max));
 }
@@ -480,16 +487,16 @@ function is_rollActionDice(msg: Message, parsedMsg: ParsedMessage) {
     chan.send(result);
 }
 
-function aw_rollMoveDice(msg, parsedMsg) {
+function aw_rollMoveDice(msg: Message, parsedMsg: ParsedMessage) {
     const { args } = parsedMsg;
     const chan = msg.channel;
-    const mods = args.reduce((m, s) => {
+    const mods = args.reduce((m: number, s: string) => {
         const i = parseInt(s);
         return m + (i ? i : 0);
     }, 0);
     const action = d(6, 2);
     const total = action[0] + action[1] + mods;
-    const modStr = args.reduce((s, n) => {
+    const modStr = args.reduce((s: string, n: string) => {
         const i = parseInt(n);
         if (!i && i !== 0) return s;
         return s + ' ' + (i < 0 ? '-' : '+') + ' ' + Math.abs(i);
@@ -511,7 +518,7 @@ function login() {
     return client.login(tokens.discord.botAccount);
 }
 
-function reconnectDiscordClient(msg, _parsedMsg) {
+function reconnectDiscordClient(msg: Message, _parsedMsg: ParsedMessage) {
     const a = msg.author;
 
     console.info(`Reset request received from ${a.id} (${a.username}#${a.discriminator}).`);
@@ -522,7 +529,7 @@ function reconnectDiscordClient(msg, _parsedMsg) {
         .then(() => login());
 }
 
-function exitProcess(msg, _parsedMsg) {
+function exitProcess(msg: Message, _parsedMsg: ParsedMessage) {
     const a = msg.author;
 
     console.info(`Shutdown request received from ${a.id} (${a.username}#${a.discriminator}).`);
@@ -533,7 +540,10 @@ function exitProcess(msg, _parsedMsg) {
         .then(() => process.exit(0));
 }
 
-
+interface HelpSymbol {
+    regexp: RegExp,
+    function: (msg: Message) => string
+}
 const helpSymbols = (() => {
     const symbols: { [key: string]: Function } = {
         helpList: (msg: Message) => {
@@ -548,7 +558,7 @@ const helpSymbols = (() => {
 
                     marker = '&';
                 }
-                const aliases = cmd.aliases.map(alias => '`' + alias + '`').join(', ');
+                const aliases = cmd.aliases.map((alias: string) => '`' + alias + '`').join(', ');
                 if (s) s += '\n\n';
                 return s + `${aliases}\n${marker}**${cmd.title}**\n    ${cmd.description}`;
             }, '');
@@ -557,17 +567,17 @@ const helpSymbols = (() => {
 
     };
 
-    return Object.keys(symbols).reduce((result: object[], key: string) => {
-        const regexp = new RegExp('\\${' + key + '}', 'gm');
+    return Object.keys(symbols).reduce((result: HelpSymbol[], key: string) => {
+        const regexp: RegExp = new RegExp('\\${' + key + '}', 'gm');
         result.push({
             regexp: regexp,
             function: symbols[key]
-        });
+        } as HelpSymbol);
         return result;
     }, []);
 })();
 
-function helpMessage(msg, parsedMsg) {
+function helpMessage(msg: Message, parsedMsg: ParsedMessage) {
     const { args } = parsedMsg;
     let helpFn = args && args.length > 0 ?
         cmdJson.cmdJumps[args[0]] : helpMessage;
@@ -583,7 +593,7 @@ function helpMessage(msg, parsedMsg) {
     if (!helpText) helpText = '_(No documentation)_';
 
 
-    helpSymbols.forEach(symbol => {
+    helpSymbols.forEach((symbol: HelpSymbol) => {
         if (!symbol.regexp.test(helpText)) return;
         const result = symbol['function'](msg);
         helpText = helpText.replace(symbol.regexp, result);
@@ -643,7 +653,7 @@ function onMsgUpdate(oldMsg: Message, newMsg: Message) {
         content = newMsg.content;
     }
 
-    const embedError = (error) => ({
+    const embedError = (error: Error) => ({
         title: 'Error',
         description: '```\n' + error.message + '\n```'
     });
