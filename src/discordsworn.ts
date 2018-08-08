@@ -8,14 +8,15 @@ import * as assert from 'assert';
 const client = new Client(); {
     client.on('ready', function onReady() { console.log('Ready.'); });
     client.on('message', onMsg);
-    client.on('error', function onError(error) {
+    client.on('error', function onError(error: Error | ErrorEvent) {
         console.error(error);
-        if (error.target instanceof ws) {
-            if (error.target.readyState === ws.CLOSED) {
-                console.info('WebSocket closed unexpectedly. Reestablishing connection...');
-                client.destroy().then(() => login());
-            }
-        }
+        const webSocketClosed =
+            error instanceof ErrorEvent
+            && error.target instanceof ws
+            && error.target.readyState === ws.CLOSED;
+        if (!webSocketClosed) return;
+        console.info('WebSocket closed unexpectedly. Reestablishing connection...');
+        client.destroy().then(() => login());
     });
     client.on('messageUpdate', onMsgUpdate);
 }
@@ -599,7 +600,7 @@ function isOwner(user: User) {
 
 const recentEmbeds: { [key: string]: Message } = {};
 
-function embedError(error) {
+function embedError(error: Error) {
     return {
         title: 'Error',
         description: '```\n' + error.message + '\n```'
