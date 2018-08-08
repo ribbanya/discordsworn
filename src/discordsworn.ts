@@ -196,11 +196,11 @@ function parseOraclesJson(json: AnyJson) {
                     }
 
                     if (key < 1) {
-                        warn(`${key} is below the minimum value (1).`);
+                        warn(`${keyId} is below the minimum value (1).`);
                         continue root;
                     }
                     if (key > d) {
-                        warn(`${key} is above the maximum (${d}).`);
+                        warn(`${keyId} is above the maximum (${d}).`);
                         continue root;
                     }
                 }
