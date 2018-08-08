@@ -13,7 +13,7 @@ const client = new discord.Client(); {
         if (error.target instanceof ws) {
             if (error.target.readyState === ws.CLOSED) {
                 console.info('WebSocket closed unexpectedly. Reestablishing connection...');
-                client.destroy().then(() => login());
+                client.destroy().then(login);
             }
         }
     });
@@ -45,6 +45,10 @@ const prefixes = ['.']; //TODO user settings
 
 function syncParseJson(filename) {
     return JSON.parse(fs.readFileSync(filename, 'utf8'));
+} //TODO async
+
+function asyncParseJson(filename) {
+
 }
 
 const tokens = syncParseJson('tokens.json');
@@ -71,8 +75,7 @@ function parseCmdJson(json) {
         const listener = supportedCommands[cmdKey];
 
         if (isMissing(aliases)) {
-            console.warn(
-                `Command '${cmdKey}' does not have any aliases. ` +
+            console.warn(`Command '${cmdKey}' does not have any aliases. ` +
                 `Using '${cmdKey}' instead.`
             );
             cmdJumps[cmdKey] = listener;
@@ -102,8 +105,7 @@ function parseCmdJson(json) {
             const list = group[key];
             if (isMissing(list)) return;
             if (!supportedArgs[cmdKey].includes(key)) {
-                console.warn(
-                    `Command ${cmdKey}'s argument '${key}'` +
+                console.warn(`Command ${cmdKey}'s argument '${key}'` +
                     'is not supported. Skipping aliases.'
                 );
                 return;
@@ -123,9 +125,7 @@ function parseCmdJson(json) {
     Object.keys(json).forEach(cmdKey => {
         const cmd = json[cmdKey];
         if (!keysIncludes(supportedCommands, cmdKey)) {
-            console.warn(
-                `Command ${cmdKey} is not supported. Skipping command.`
-            );
+            console.warn(`Command ${cmdKey} is not supported. Skipping command.`);
             return;
         }
         parseJumps(cmdKey);
@@ -611,7 +611,9 @@ function embedWatch(msg, parsedMsg) {
 
 function embedTest(msg, parsedMsg) {
     const options = parseOptionsJson(parsedMsg.content);
-    msg.channel.send(options.content || msg.author.toString(), options)
+    msg.channel.send(
+            options.content || msg.author.toString(),
+            options)
         .then((v) => {
             if (!(v instanceof discord.Message)) {
                 throw v;
