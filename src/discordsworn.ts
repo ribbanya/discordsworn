@@ -1,10 +1,10 @@
-﻿const discord = require('discord.js');
-const fs = require('fs');
-const ws = require('ws');
-const dateFormat = require('dateformat');
-const Dice = require('node-dice-js');
+﻿import { Client, DMChannel } from 'discord.js';
+import * as fs from 'fs';
+import * as ws from 'ws';
+import * as dateFormat from 'dateformat';
+import * as Dice from 'node-dice-js';
 
-const client = new discord.Client(); {
+const client = new Client(); {
     client.on('ready', function onReady() { console.log('Ready.'); });
     client.on('message', onMsg);
     client.on('error', function onError(error) {
@@ -183,16 +183,16 @@ function parseOraclesJson(json) {
                     const key = parseInt(keys[i]);
                     const keyId = `'s results key '${key}'`;
                     if (!key) {
-                        warn(`${keyId} is not an integer`);
+                        warn(`${key} is not an integer`);
                         continue root;
                     }
 
-                    if (keyId < 1) {
-                        warn(`${keyId} is below the minimum value (1).`);
+                    if (key < 1) {
+                        warn(`${key} is below the minimum value (1).`);
                         continue root;
                     }
-                    if (keyId > d) {
-                        warn(`${keyId} is above the maximum (${d}).`);
+                    if (key > d) {
+                        warn(`${key} is above the maximum (${d}).`);
                         continue root;
                     }
                 }
@@ -242,7 +242,7 @@ function onMsg(msg) {
         });
         const relevant = hasPrefix ||
             msg.isMentioned(client.user) ||
-            msg.channel instanceof discord.DMChannel;
+            msg.channel instanceof DMChannel;
 
         if (!relevant) return;
     }
@@ -271,13 +271,12 @@ function onMsg(msg) {
         return;
     } catch (error) {
         let output = `${msg.author} Error: ${error.message}.`;
-        const helpOutput = errorHelp(cmdKey);
+        const helpOutput = errorHelp(cmdKey, undefined);
         if (helpOutput) output += `\n${helpOutput}`;
         msg.channel.send(output);
         console.error(`Error encountered while handling '${msg.content}':`, error);
     }
 }
-
 const helpAlias = Object.entries(cmdJson.cmdJumps)
     .find(kvp => kvp[1] === helpMessage)[0];
 
@@ -299,7 +298,7 @@ function is_askTheOracle(msg, cmdKey, args) {
         ' A likelihood is required. Please use a whole number between ' +
         '0-100 or one of the following:\n' +
         Object.keys(argJumps).map(s => '`' + s + '`').join(', ');
-    const helpOutput = errorHelp(cmdKey);
+    const helpOutput = errorHelp(cmdKey, undefined);
     if (helpOutput) invalidArgsMsg += `\n${helpOutput}`;
 
     if (args.length < 1) {
@@ -364,35 +363,35 @@ function is_oracleLookupTable(msg, cmdKey, args, tableAlias) {
     const comment = args.length > 1 ? args.slice(1).join(' ') : null;
     if (comment) output += `"${comment}"\n`;
 
-    const lookup = (results, roll) => Object.keys(results).find(k => k >= roll);
+    const lookup = (results: object, roll: string): string | undefined => Object.keys(results).find(k => k >= roll);
     let key = lookup(oracle.results, roll);
     const value = oracle.results[key];
-    const list = [];
+    const list: string[] = [];
     switch (oracle.type) {
-    case null:
-        output += `${msg.author} **${value}**.`;
-        break;
-    case 'multipleColumns':
-        output += `${msg.author} `;
-        for (let i = 0; i < oracle.results[key].length; i++) {
-            let s = '';
-            if (oracle.headers && i < oracle.headers.length) {
-                s += `${oracle.headers[i]}: `;
+        case null:
+            output += `${msg.author} **${value}**.`;
+            break;
+        case 'multipleColumns':
+            output += `${msg.author} `;
+            for (let i = 0; i < oracle.results[key].length; i++) {
+                let s = '';
+                if (oracle.headers && i < oracle.headers.length) {
+                    s += `${oracle.headers[i]}: `;
+                }
+                s += `**${value[i]}**.`;
+                list.push(s);
             }
-            s += `**${value[i]}**.`;
-            list.push(s);
-        }
-        output += list.join(' ');
-        break;
-    case 'nested':
-        roll = d(value.d ? value.d : 100); //TODO: Accept nested "d"
-        output += `    **${value.title}** vs. **${roll}**…\n`;
-        key = lookup(value.results, roll);
-        output += `    _${value.prompt}_\n` +
-            `${msg.author} **${value.results[key]}**.`;
-        break;
-    default:
-        console.error(`Oracle '${oracle.title}' has unsupported type '${oracle.type}'.`);
+            output += list.join(' ');
+            break;
+        case 'nested':
+            roll = d(value.d ? value.d : 100); //TODO: Accept nested "d"
+            output += `    **${value.title}** vs. **${roll}**…\n`;
+            key = lookup(value.results, roll);
+            output += `    _${value.prompt}_\n` +
+                `${msg.author} **${value.results[key]}**.`;
+            break;
+        default:
+            console.error(`Oracle '${oracle.title}' has unsupported type '${oracle.type}'.`);
     }
     msg.channel.send(output);
 }
@@ -531,7 +530,7 @@ const helpSymbols = (() => {
 
     };
 
-    return Object.keys(symbols).reduce((result, key) => {
+    return Object.keys(symbols).reduce((result: object[], key: string) => {
         const regexp = new RegExp('\\${' + key + '}', 'gm');
         result.push({
             regexp: regexp,
