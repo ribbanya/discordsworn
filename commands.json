@@ -148,5 +148,11 @@
         "description": "TODO Delete me",
         "requiresOwner": true,
         "aliases": ["mb", "embed"]
+    },
+    "embedWatch": {
+        "title": "Watch a file for changes, and embed it as JSON",
+        "description": "TODO Delete me",
+        "requiresOwner": true,
+        "aliases": ["mbw", "embed-watch"]
     }
 }

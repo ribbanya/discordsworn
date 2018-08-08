@@ -25,7 +25,8 @@ const supportedCommands = [
     aw_rollMoveDice,
     rollDice,
     helpMessage,
-    reconnectDiscordClient, exitProcess, embedTest
+    reconnectDiscordClient, exitProcess,
+    embedTest, embedWatch
 ].reduce((sc, fn) => {
     sc[fn.name] = fn;
     return sc;
@@ -595,6 +596,18 @@ function parseOptionsJson(json) {
         return { embed: embedError(error) };
     }
 }
+
+const embedWatching = {};
+
+function embedWatch(msg, parsedMsg) {
+    const { content } = parsedMsg;
+    /*
+        1. Parse the file
+        2. Send a parsed version
+        3. 
+    */
+}
+
 
 function embedTest(msg, parsedMsg) {
     const options = parseOptionsJson(parsedMsg.content);
