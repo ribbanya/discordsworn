@@ -1,4 +1,4 @@
-﻿﻿import { User, RichEmbed, Client, DMChannel, Message } from 'discord.js';
+﻿﻿import { User, Client, DMChannel, Message } from 'discord.js';
 import * as fs from 'fs';
 import * as ws from 'ws';
 import * as dateFormat from 'dateformat';
@@ -21,20 +21,23 @@ const client = new Client(); {
     client.on('messageUpdate', onMsgUpdate);
 }
 
-type CommandFunction = (msg: Message, parsedMsg: ParsedMessage) => void;
-interface JumpTable {
-    [key: string]: CommandFunction
+interface Map<T> {
+    [key: string]: T
 }
+
+type CommandFunction = (msg: Message, parsedMsg: ParsedMessage) => void;
+type CommandJumpTable = Map<CommandFunction>;
+
 const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
     aw_rollMoveDice,
     rollDice,
     helpMessage,
     reconnectDiscordClient, exitProcess, embedTest
-].reduce((sc: JumpTable, fn: CommandFunction): JumpTable => {
+].reduce((sc: CommandJumpTable, fn: CommandFunction): CommandJumpTable => {
     sc[fn.name as string] = fn;
     return sc;
-}, {} as JumpTable); //TODO separate module
+}, {} as CommandJumpTable); //TODO separate module
 
 const supportedArgs = { //TODO: supportedCommands[cmdKey].supportedArgs
     [is_askTheOracle.name]: [
@@ -63,12 +66,12 @@ function formatArg(arg: string) {
 }
 
 interface CommandJson {
-    cmdData: any, //TODO
-    cmdJumps: any // TODO
+    cmdData: Map<any>, //TODO
+    cmdJumps: CommandJumpTable
 }
 function parseCmdJson(json: any /* TODO */): CommandJson {
-    const cmdJumps: JumpTable = {};
-    const cmdData: any = {};
+    const cmdData: Map<any> = {};
+    const cmdJumps: CommandJumpTable = {};
 
     const isMissing = (array: any[]) => !array || array.length < 1;
     const keysIncludes = (object: object, key: string) => Object.keys(object).includes(key);
@@ -98,18 +101,13 @@ function parseCmdJson(json: any /* TODO */): CommandJson {
 
     const parseArgLabels = (cmdKey: string) => json[cmdKey].argLabels || null;
 
-    interface ArgJumpTable {
-        cmdData: any, //TODO
-        cmdJumps: any //TODO
-    }
-    const parseArgJumps = (cmdKey: string): ArgJumpTable | null => {
+
+    const parseArgJumps = (cmdKey: string): Map<string> | null => {
         const group = json[cmdKey].argAliases;
 
         if (isMissing(group)) return null;
 
-        const argJumps: ArgJumpTable = {
-            cmdData: null, cmdJumps: 'null' as string
-        };
+        const argJumps: Map<string> = {};
 
         const keys = Object.keys(group);
         keys.forEach(key => {
@@ -302,8 +300,14 @@ function onMsg(msg: Message) {
         console.error(`Error encountered while handling '${msg.content}':`, error);
     }
 }
-const helpAlias = Object.entries(cmdJson.cmdJumps)
-    .find(kvp => kvp[1] === helpMessage)[0];
+
+
+const helpAlias = (() => {
+    const result = Object.entries(cmdJson.cmdJumps)
+        .find(kvp => kvp[1] === helpMessage);
+    if (!result) throw 'Help command not found.';
+    return result;
+})()[0];
 
 function errorHelp(cmdKey: string, args?: string[]) {
     if (!helpAlias) return null;
