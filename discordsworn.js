@@ -18,7 +18,7 @@ const client = new discord.Client(); {
 
 const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
-    aw_rollMoveDice,
+    is_createNPC,
     helpMessage,
     reconnectDiscordClient, exitProcess
 ].reduce((sc, fn) => {
@@ -224,9 +224,9 @@ function parseOraclesJson(json) {
 
 
 function onMsg(msg) {
-    if (msg.author.id === client.user.id) return;
+    if (msg.author.id === client.user.id || msg.author.id === "584835704941707274") return; //Don't check messages from the bot
 
-    const mention = new RegExp(`<@.?${client.user.id}>`, 'g');
+    const mention = new RegExp(`<@.?${client.user.id}>`, 'g'); 
     let content = msg.content.replace(mention, '')
         .replace(/ {2,}/, ' ').trim();
     {
@@ -241,7 +241,7 @@ function onMsg(msg) {
             msg.isMentioned(client.user) ||
             msg.channel instanceof discord.DMChannel;
 
-        if (!relevant) return;
+        if (!relevant) return; //If there's no prefix, @bot mention, and isn't a DM, this isn't a message for the bot.
     }
 
     const args = content.split(' ');
@@ -348,7 +348,7 @@ function is_oracleLookupTable(msg, cmdKey, args, tableAlias) {
     const oracleName = args[0].toLowerCase();
     const oracle = oracles.map[oracleName];
     if (!oracle) {
-        let output = `${msg.author} Oracle \`${oracleName}\` not found.` +
+        let output = `${msg.author} Oracle \`${oracleName}\` not found. ` +
             `${oracleNotFoundMsg}`;
         if (helpOutput) output += `\n${helpOutput}`;
         msg.channel.send(output);
@@ -443,6 +443,82 @@ function is_rollActionDice(msg, cmdKey, args) {
 
     if (challenge[0] == challenge[1]) result += ' _MATCH!_';
     chan.send(result);
+}
+
+function is_createNPC(msg, cmdKey, args) {
+    //TODO: Add region, name type, and gender?    
+    const chan = msg.channel;
+
+    let role = internalOracleLookupTable("nr");
+    let name = internalOracleLookupTable("in");
+    let description = internalOracleLookupTable("nd");
+    let goal = internalOracleLookupTable("g");
+
+    let roleMod = "a";
+    if (["A", "E", "I", "O", "U", "a", "e", "i", "o", "u"].includes(role.slice(2,3))) {
+        roleMod = "an";
+    } 
+
+    chan.send("The NPC is " + roleMod + " " + role + " named " + name + ". They are " + description + " and want to " + goal + ".");
+}
+
+function internalOracleLookupTable(tableName) {
+    const oracleNotFoundMsg =
+        'Please specify an Oracle from the list:\n' +
+        Object.keys(oracles.map).map(s => '`' + s + '`').join(', ');
+
+    let oracleName = tableName.toLowerCase();
+    const oracle = oracles.map[oracleName];
+    if (!oracle) {
+        let output = `Oracle \`${oracleName}\` not found. ` +
+            `${oracleNotFoundMsg}`;
+        if (helpOutput) output += `\n${helpOutput}`;
+        return output;
+    }
+    //TODO: Check for oracle.results
+    let roll = d(oracle.d ? oracle.d : 100);
+    let output = ``;
+
+    const lookup = (results, roll) => Object.keys(results).find(k => k >= roll);
+    let key = lookup(oracle.results, roll);
+    const value = oracle.results[key];
+    const list = [];
+    switch (oracle.type) {
+    case null:
+        output += `**${value}**`;
+        break;
+    case 'multipleColumns':
+        for (let i = 0; i < oracle.results[key].length; i++) {
+            let s = '';
+            if (oracle.headers && i < oracle.headers.length) {
+                s += `${oracle.headers[i]}: `;
+            }
+            s += `**${value[i]}**`;
+            list.push(s);
+        }
+        output += list.join(' ');
+        break;
+    case 'nested':
+        roll = d(value.d ? value.d : 100); //TODO: Accept nested "d"
+        output += `    **${value.title}** vs. **${roll}**…\n`;
+        key = lookup(value.results, roll);
+        output += `    _${value.prompt}_\n` +
+            `**${value.results[key]}**`;
+        break;
+    default:
+        console.error(`Oracle '${oracle.title}' has unsupported type '${oracle.type}'.`);
+    }
+    if (output == "Roll twice") {
+        let result1 = internalOracleLookupTable(tableName);
+        let result2 = internalOracleLookupTable(tableName);
+
+        while (result1 == result2) { 
+            result2 = internalOracleLookupTable(tableName);
+        }
+
+        output = result1 + " and " + result2 + " ";
+    }
+    return output;
 }
 
 function aw_rollMoveDice(msg, cmdKey, args) {

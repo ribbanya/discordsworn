@@ -35,11 +35,11 @@
             "90": "almost certain"
         }
     },
-    "aw_rollMoveDice": {
-        "title": "Apocalypse World Move Roll",
-        "description": "Performs a Move roll from the _Apocalypse World_ engine.",
-        "helpText": "**__Apocalypse World Move Roll__**\nPerforms a Move roll from the _Apocalypse World_ engine.\n\nTo perform a Move, simply use the `apocalypse-world-move` command or one of its aliases. You may include any number of whole numbers, which will be counted as modifiers. Text is ignored, which allows you to add a description to your rolls:\n```.apocalypse-world-move Rolling to Manipulate the guard to let me pass by telling him I have business with the gang leader. +2 Hot and +1 Forward from earlier.```\nThe command has a few aliases (`aw`, `move`, and `m`). All you need are the numeric modifiers; the text is purely for flavour. All aliases function exactly the same:\n```.aw Manipulating the guard by lying: +2 Hot, +1 Forward```\n```.move Manipulate +2 h +1 F```\n`+`'s can be omitted, as well as any text:\n```.m 2 1```\nYou can put as much text, and as many modifiers, into a roll as Discord's 2,000-character limit will allow.",
-        "aliases": ["apocalypse-world-move", "aw", "move", "m"]
+    "is_createNPC": {
+        "title": "Ironsworn Create NPC",
+        "description": "Creates a NPC form the oracle tables",
+        "helpText": "**__Ironsworn Create NPC__**\nCreates a NPC form the oracle tables.",
+        "aliases": ["ironsworn-create-npc", "cnpc", "new"]
     },
     "reconnectDiscordClient": {
         "title": "Reconnect Client",

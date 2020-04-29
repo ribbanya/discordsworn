@@ -1,5 +1,5 @@
 {
-    "name": "discordsworn",
+    "name": "discordsworn2",
     "version": "1.2.1",
     "description": "A Discord dice rolling bot that supports Ironsworn and other tabletop RPG systems.",
     "bugs": {
@@ -21,8 +21,10 @@
     },
     "dependencies": {
         "dateformat": "^3.0.3",
+        "discord.io": "^2.5.3",
         "discord.js": "^11.3.2",
-        "eslint": "^5.2.0"
+        "eslint": "^5.2.0",
+        "winston": "^3.2.1"
     },
     "devDependencies": {}
 }
