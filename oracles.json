@@ -1201,7 +1201,7 @@
     "title": "Major Plot Twist",
     "aliases": ["mpt"],
     "results": {
-        "5": "It was all a diversion.",
+        "2": "It was all a diversion.",
         "10": "A dark secret is revealed.",
         "15": "A trap is sprung.",
         "20": "An assumption is revealed to be false.",
@@ -1279,4 +1279,27 @@
         "95": "Genderqueer person (he or she or they or other)",
         "100": "Questioning"
     }
-}]
+},
+{
+    "title": "Pay The Price",
+    "aliases": ["ptp"],
+    "results": {
+        "2": "Roll again and apply that result but make it worse. If you roll this result yet again, think of something dreadful that changes the course of your quest (Ask the Oracle if unsure) and make it happen.",
+        "5": "A person or community you trusted loses faith in you, or acts against you.",
+        "9": "A person or community you care about is exposed to danger.",
+        "16": "You are separated from something or someone.",
+        "23": "Your action has an unintended effect.",
+        "32": "Something of value is lost or destroyed.",
+        "41": "The current situation worsens.",
+        "50": "A new danger or foe is revealed.",
+        "59": "It causes a delay or puts you at a disadvantage.",
+        "68": "It is harmful.",
+        "77": "It is stressful.",
+        "85": "A surprising development complicates your quest.",
+        "90": "It wastes resources.",
+        "94": "It forces you to act against your best intentions.",
+        "98": "A friend, companion, or ally is put in harm’s way (or you are, if alone).",
+        "100": "Roll twice more on this table. Both results occur. If they are the same result, make it worse."
+    }
+}
+]
