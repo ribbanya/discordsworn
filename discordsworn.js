@@ -21,6 +21,7 @@ const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
     is_createNPC,
     is_trackProgress,
+    aw_rollMoveDice,
     helpMessage,
     reconnectDiscordClient, exitProcess
 ].reduce((sc, fn) => {
@@ -547,8 +548,10 @@ function is_trackProgress(msg, cmdKey, args) {
                 if (err) throw err;
         }); 
 
-        message.react("➖") //React in order
-        .then(() => message.react("➕"))
+        message.react("◀️") //React in order
+        .then(() => message.react("▶️"))
+        .then(() => message.react("#️⃣"))
+        .then(() => message.react("🎲"))
     })
     .catch(() => console.error('One of the emojis failed to react.'));
 }
@@ -556,37 +559,71 @@ function is_trackProgress(msg, cmdKey, args) {
 client.on('messageReactionAdd', async (reaction, user) => {
     if (user.id == client.user.id || reaction.message.author.id != client.user.id) return;
 
-    if (reaction.emoji.name == '➕') {
-        changeProgressValue(reaction, 1)
-        reaction.remove(user.id)
-        .catch(console.error);
+    if (reaction.emoji.name == '▶️') {
+        let ticks = calculateTicks(reaction, 1, true);
+        updateProgressTracker(reaction, ticks);
+        reaction.remove(user.id).catch(console.error);
     }
-    else if (reaction.emoji.name == '➖') {
-        changeProgressValue(reaction, -1)
-        reaction.remove(user.id)
-        .catch(console.error);
+    else if (reaction.emoji.name == '◀️') {
+        let ticks = calculateTicks(reaction, -1, true);
+        updateProgressTracker(reaction, ticks);
+        reaction.remove(user.id).catch(console.error);
+    }
+    else if (reaction.emoji.name == '#️⃣') {
+        let ticks = calculateTicks(reaction, 4, false);
+        updateProgressTracker(reaction, ticks);
+        reaction.remove(user.id).catch(console.error);
+    }
+    else if (reaction.emoji.name == '🎲') {
+        const challenge = d(10, 2);
+
+        let amount = calculateTicks(reaction, 0, false);
+        let fullMarks = Math.floor(amount / 4);
+        
+        const challengeStr = challenge.map(n => (fullMarks) > n ? `__${n}__` : n);
+
+        let result = `Progress Roll\n**${fullMarks}**`;
+        result += ` vs. **${challengeStr[0]}** & **${challengeStr[1]}**`;
+
+        let success = 0;
+        for (let i = 0; i < challenge.length; i++) {
+            if (fullMarks > challenge[i]) {
+                success++;
+            }
+        }
+
+        const successStr = ['Miss...', 'Weak hit!', '_Strong hit!_'][success];
+        result += `\n${user} ${successStr}`;
+    
+        if (challenge[0] == challenge[1]) result += ' _MATCH!_';
+        reaction.remove(user.id).catch(console.error);
+        reaction.message.channel.send(result);
     }
 });
 
-function changeProgressValue(reaction, amount) {
-    let noTick = '·';
-    let singleTick = '-';
-    let doubleTick = 'x';
-    let tripleTick = '*';
-    let completedTick = '#';
+const noTick = '·';
+const singleTick = '-';
+const doubleTick = 'x';
+const tripleTick = '*';
+const completedTick = '#';
 
+function calculateTicks(reaction, amount, useRank) {
     let regexProgressBox = /\[.*\]/;
     let regexRank = /(troublesome|dangerous|formidable|extreme|epic)/;
     
     let progressBox = reaction.message.content.match(regexProgressBox);    
     let rank = reaction.message.content.match(regexRank)[0];
 
-    let ticksToAdd = 1;    
-    if (rank == 'troublesome') ticksToAdd = 12;       
-    if (rank == 'dangerous') ticksToAdd = 8;       
-    if (rank == 'formidable') ticksToAdd = 4;       
-    if (rank == 'extreme') ticksToAdd = 2;       
-    if (rank == 'epic') ticksToAdd = 1;
+    let ticksToAdd = 1;
+    if (useRank) {
+        if (rank == 'troublesome') ticksToAdd = 12 * amount;       
+        if (rank == 'dangerous') ticksToAdd = 8 * amount;       
+        if (rank == 'formidable') ticksToAdd = 4 * amount;       
+        if (rank == 'extreme') ticksToAdd = 2 * amount;       
+        if (rank == 'epic') ticksToAdd = 1 * amount;
+    } else {
+        ticksToAdd = amount;
+    }    
 
     let progressString = progressBox[0].replace('[', '').replace(']', '');
     let firstEmpty = progressString.search(noTick);
@@ -622,11 +659,15 @@ function changeProgressValue(reaction, amount) {
     }
     currentTick += inProgressMarkValue;
 
-    let finalTicks = currentTick + (ticksToAdd * amount);
+    let finalTicks = currentTick + ticksToAdd;
     //Min and max checks
     if (finalTicks > 40) finalTicks = 40;
     if (finalTicks < 0) finalTicks = 0;
 
+    return finalTicks;
+}
+
+function updateProgressTracker(reaction, finalTicks) {
     let fullMarks = Math.floor(finalTicks / 4);
     let partialMarks = (finalTicks % 4);
 
@@ -636,6 +677,8 @@ function changeProgressValue(reaction, amount) {
     if (partialMarks == 3) progressCharacters += tripleTick; 
 
     let regexProgressValue = /\d\d?\/10/
+    let regexProgressBox = /\[.*\]/;
+
     let newBox = `[${progressCharacters}${noTick.repeat(10 - progressCharacters.length)}]`;
     let newValue = `${fullMarks}/10`;
     let newContent = reaction.message.content.replace(regexProgressBox, newBox).replace(regexProgressValue, newValue);
