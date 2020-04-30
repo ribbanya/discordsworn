@@ -3,22 +3,24 @@ const fs = require('fs');
 const ws = require('ws');
 const dateFormat = require('dateformat');
 
-const client = new discord.Client(); {
-    client.on('ready', () => console.log('Ready.'));
-    client.on('message', onMsg);
-    client.on('error', (error) => {
-        console.error(error);
-        if (error.target instanceof ws) {
-            if (error.target.readyState === ws.CLOSED) {
-                reconnectDiscordClient();
-            }
+const { Client } = require('discord.js');
+const client = new Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
+
+client.on('ready', () => console.log('Ready.'));
+client.on('message', onMsg);
+client.on('error', (error) => {
+    console.error(error);
+    if (error.target instanceof ws) {
+        if (error.target.readyState === ws.CLOSED) {
+            reconnectDiscordClient();
         }
-    });
-}
+    }
+});
 
 const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
     is_createNPC,
+    is_trackProgress,
     helpMessage,
     reconnectDiscordClient, exitProcess
 ].reduce((sc, fn) => {
@@ -454,12 +456,13 @@ function is_createNPC(msg, cmdKey, args) {
     let description = internalOracleLookupTable("nd");
     let goal = internalOracleLookupTable("g");
 
-    let roleMod = "a";
-    if (["A", "E", "I", "O", "U", "a", "e", "i", "o", "u"].includes(role.slice(2,3))) {
-        roleMod = "an";
+    let vowels = ["A", "E", "I", "O", "U", "a", "e", "i", "o", "u"];
+    let a = "a";
+    if (vowels.includes(role.slice(2,3))) {
+        a = "an";
     } 
 
-    chan.send("The NPC is " + roleMod + " " + role + " named " + name + ". They are " + description + " and want to " + goal + ".");
+    chan.send(`The NPC is ${a} ${role} named ${name}. They are ${description} and want to ${goal}.`);
 }
 
 function internalOracleLookupTable(tableName) {
@@ -520,6 +523,154 @@ function internalOracleLookupTable(tableName) {
     }
     return output;
 }
+
+function is_trackProgress(msg, cmdKey, args) {
+    const rank = args[0];
+
+    const invalidArgsMsg = 
+        'Please specify a difficulty\n' +
+        '`troublesome`,`dangerous`,`formidable`,`extreme`,`epic`';
+    
+    if (args.length < 1) {
+        msg.channel.send(invalidArgsMsg);
+        return;
+    }
+
+    const comment = args.length > 1 ? args.slice(1).join(' ').replace('\n') : 'Unnamed Tracker';
+    let result = '```Tracking Progress (' + rank + '):\n' + comment + '\n[··········] Current Progress: 0/10```';
+    msg.channel.send(result)
+    .then(function(message) {
+        var data = msg.channel.id + ',' + message.id + '\r\n';
+ 
+        fs.appendFile('progressTrackers.csv', data, 'utf8',
+            function(err) { 
+                if (err) throw err;
+        }); 
+
+        message.react("➖") //React in order
+        .then(() => message.react("➕"))
+    })
+    .catch(() => console.error('One of the emojis failed to react.'));
+}
+
+client.on('messageReactionAdd', async (reaction, user) => {
+    if (user.id == client.user.id || reaction.message.author.id != client.user.id) return;
+
+    if (reaction.emoji.name == '➕') {
+        changeProgressValue(reaction, 1)
+        reaction.remove(user.id)
+        .catch(console.error);
+    }
+    else if (reaction.emoji.name == '➖') {
+        changeProgressValue(reaction, -1)
+        reaction.remove(user.id)
+        .catch(console.error);
+    }
+});
+
+function changeProgressValue(reaction, amount) {
+    let noTick = '·';
+    let singleTick = '-';
+    let doubleTick = 'x';
+    let tripleTick = '*';
+    let completedTick = '#';
+
+    let regexProgressBox = /\[.*\]/;
+    let regexRank = /(troublesome|dangerous|formidable|extreme|epic)/;
+    
+    let progressBox = reaction.message.content.match(regexProgressBox);    
+    let rank = reaction.message.content.match(regexRank)[0];
+
+    let ticksToAdd = 1;    
+    if (rank == 'troublesome') ticksToAdd = 12;       
+    if (rank == 'dangerous') ticksToAdd = 8;       
+    if (rank == 'formidable') ticksToAdd = 4;       
+    if (rank == 'extreme') ticksToAdd = 2;       
+    if (rank == 'epic') ticksToAdd = 1;
+
+    let progressString = progressBox[0].replace('[', '').replace(']', '');
+    let firstEmpty = progressString.search(noTick);
+
+    let currentMarks;
+    if (firstEmpty < 0) {
+        currentMarks = 10;
+    } else if (firstEmpty == 0) {
+        currentMarks = 0;
+    } else {
+        currentMarks = firstEmpty - 1;
+    }
+
+    let inProgressMarkValue = 0;
+    switch (progressString.substr(currentMarks, 1)) {
+        case singleTick:
+            inProgressMarkValue = 1;
+            break;
+        case doubleTick:
+            inProgressMarkValue = 2;
+            break;
+        case tripleTick:
+            inProgressMarkValue = 3;
+            break;
+        case completedTick:
+            inProgressMarkValue = 4;
+            break;
+    }
+
+    let currentTick = 0;
+    if (currentMarks > 0) {
+        currentTick = currentMarks * 4;
+    }
+    currentTick += inProgressMarkValue;
+
+    let finalTicks = currentTick + (ticksToAdd * amount);
+    //Min and max checks
+    if (finalTicks > 40) finalTicks = 40;
+    if (finalTicks < 0) finalTicks = 0;
+
+    let fullMarks = Math.floor(finalTicks / 4);
+    let partialMarks = (finalTicks % 4);
+
+    let progressCharacters = completedTick.repeat(fullMarks);
+    if (partialMarks == 1) progressCharacters += singleTick; 
+    if (partialMarks == 2) progressCharacters += doubleTick; 
+    if (partialMarks == 3) progressCharacters += tripleTick; 
+
+    let regexProgressValue = /\d\d?\/10/
+    let newBox = `[${progressCharacters}${noTick.repeat(10 - progressCharacters.length)}]`;
+    let newValue = `${fullMarks}/10`;
+    let newContent = reaction.message.content.replace(regexProgressBox, newBox).replace(regexProgressValue, newValue);
+
+    reaction.message.edit(newContent);
+}
+
+//Load the saved messages
+client.on('ready', () => {
+    const readline = require('readline');
+
+    async function processLineByLine() {
+        const fileStream = fs.createReadStream('progressTrackers.csv');
+
+        const rl = readline.createInterface({
+            input: fileStream,
+            crlfDelay: Infinity
+        });
+
+        for await (const line of rl) {            
+            let input = line.split(',');
+            if (input.length < 2) return;
+
+            let channelId = input[0];
+            let messageId = input[1];
+
+            let channel = client.channels.get(channelId);
+            channel.fetchMessages(messageId);
+	        console.log(`Fetched message ${messageId}`);
+        }
+    }
+
+    processLineByLine();
+
+});
 
 function aw_rollMoveDice(msg, cmdKey, args) {
     const chan = msg.channel;

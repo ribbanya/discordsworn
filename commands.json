@@ -41,6 +41,12 @@
         "helpText": "**__Ironsworn Create NPC__**\nCreates a NPC form the oracle tables.",
         "aliases": ["ironsworn-create-npc", "cnpc", "new"]
     },
+    "is_trackProgress": {
+        "title": "Ironsworn Progress Tracker",
+        "description": "Creates a post that allows players to track progress through reactions",
+        "helpText": "**__Ironsworn Progress Tracker__**\nCreates a post that allows players to track progress through reactions",
+        "aliases": ["ironsworn-progress-tracker", "pt", "progress"]
+    },
     "reconnectDiscordClient": {
         "title": "Reconnect Client",
         "description": "Severs the connection to Discord, then reopens it.",
