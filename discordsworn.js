@@ -226,7 +226,7 @@ function parseOraclesJson(json) {
 
 
 function onMsg(msg) {
-    if (msg.author.id === client.user.id || msg.author.id === "584835704941707274") return; //Don't check messages from the bot
+    if (msg.author.id === client.user.id) return; //Don't check messages from the bot
 
     const mention = new RegExp(`<@.?${client.user.id}>`, 'g'); 
     let content = msg.content.replace(mention, '')
@@ -240,7 +240,7 @@ function onMsg(msg) {
             return false;
         });
         const relevant = hasPrefix ||
-            msg.isMentioned(client.user) ||
+            msg.mentions.has(client.user) ||
             msg.channel instanceof discord.DMChannel;
 
         if (!relevant) return; //If there's no prefix, @bot mention, and isn't a DM, this isn't a message for the bot.
@@ -576,41 +576,41 @@ client.on('messageReactionAdd', async (reaction, user) => {
     if (reaction.emoji.name == '▶️') {
         let ticks = calculateTicks(reaction, 1, true);
         updateProgressTracker(reaction, ticks);
-        reaction.remove(user.id).catch(console.error);
+        reaction.users.remove(user.id).catch(console.error);
     }
     else if (reaction.emoji.name == '◀️') {
         let ticks = calculateTicks(reaction, -1, true);
         updateProgressTracker(reaction, ticks);
-        reaction.remove(user.id).catch(console.error);
+        reaction.users.remove(user.id).catch(console.error);
     }
     else if (reaction.emoji.name == '#️⃣') {
         let ticks = calculateTicks(reaction, 4, false);
         updateProgressTracker(reaction, ticks);
-        reaction.remove(user.id).catch(console.error);
+        reaction.users.remove(user.id).catch(console.error);
     }
     else if (reaction.emoji.name == '🎲') {
         rollProgress(reaction);
-        reaction.remove(user.id).catch(console.error);
+        reaction.users.remove(user.id).catch(console.error);
     }
     else if (reaction.emoji.name == '🆔') {
         renameNPC(reaction);
-        reaction.remove(user.id).catch(console.error);    
+        reaction.users.remove(user.id).catch(console.error);    
     }
     else if (reaction.emoji.name == '🧝') {
         renameNPC(reaction);
-        reaction.remove(user.id).catch(console.error);
+        reaction.users.remove(user.id).catch(console.error);
     }
     else if (reaction.emoji.name == '🎭') {
         addDescriptor(reaction);
-        reaction.remove(user.id).catch(console.error);
+        reaction.users.remove(user.id).catch(console.error);
     }
     else if (reaction.emoji.name == '🎯') {
         addGoal(reaction);
-        reaction.remove(user.id).catch(console.error);
+        reaction.users.remove(user.id).catch(console.error);
     }
     else if (reaction.emoji.name == '💼') {
         addRole(reaction);
-        reaction.remove(user.id).catch(console.error);
+        reaction.users.remove(user.id).catch(console.error);
     }
     else if (reaction.emoji.name == '🚫') {
         reaction.message.delete().catch(console.error);    
@@ -782,11 +782,11 @@ client.on('ready', () => {
             if (messageId == "709848164483465277") 
                 breakHere = true;
 
-            if (!client.channels.exists("id", channelId)) continue;
+            if (!client.channels.cache.some(channel => channel.id === channelId)) continue;
 
             try {
-                let channel = client.channels.get(channelId);
-                channel.fetchMessage(messageId);
+                let channel = client.channels.cache.get(channelId);
+                channel.messages.fetch(messageId);
                 counter++;
             } catch (error) {
                 console.error(error.message);
