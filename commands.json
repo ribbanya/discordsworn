@@ -38,7 +38,7 @@
     "is_createNPC": {
         "title": "Ironsworn Create NPC",
         "description": "Creates a NPC from the oracle tables",
-        "helpText": "**__Ironsworn Create NPC__**\nCreates a NPC form the oracle tables.\nThe format is 'The NPC is a `role` named `name`. They are `descriptor` and want to `goal`.\n\n__Reactions__\n:briefcase: Adds an additional NPC role.\n:dart: Adds and additional NPC goal.\n:performing_art: Adds and additional NPC descriptor.\n:id: Gives the NPC a new Ironlander name.\n:elf: Gives the NPC a new elf name.",
+        "helpText": "**__Ironsworn Create NPC__**\nCreates a NPC form the oracle tables.\nThe format is 'The NPC is a `role` named `name`. They are `descriptor` and want to `goal`.\n\n__Reactions__\n:briefcase: Adds an additional NPC role.\n:dart: Adds an additional NPC goal.\n:performing_arts: Adds an additional NPC descriptor.\n:id: Gives the NPC a new Ironlander name.\n:elf: Gives the NPC a new elf name.",
         "aliases": ["ironsworn-create-npc", "cnpc", "new"]
     },
     "is_trackProgress": {
