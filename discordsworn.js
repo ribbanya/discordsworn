@@ -6,7 +6,6 @@ const dateFormat = require('dateformat');
 const { Client } = require('discord.js');
 const client = new Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 
-client.on('ready', () => console.log('Ready.'));
 client.on('message', onMsg);
 client.on('error', (error) => {
     console.error(error);
@@ -463,7 +462,23 @@ function is_createNPC(msg, cmdKey, args) {
         a = "an";
     } 
 
-    chan.send(`The NPC is ${a} ${role} named ${name}. They are ${description} and want to ${goal}.`);
+    chan.send(`The NPC is ${a} ${role} named ${name}. They are ${description} and want to ${goal}.`)
+    .then(function(message) {
+        var data = msg.channel.id + ',' + message.id + '\r\n';
+ 
+        fs.appendFile('progressTrackers.csv', data, 'utf8',
+            function(err) { 
+                if (err) throw err;
+        }); 
+
+        message.react("💼")
+        .then(() => message.react("🎯"))
+        .then(() => message.react("🎭"))
+        .then(() => message.react("🆔"))
+        .then(() => message.react("🧝"))
+        //.then(() => message.react("👽"))
+    })
+    .catch(() => console.error('One of the emojis failed to react.'));
 }
 
 function internalOracleLookupTable(tableName) {
@@ -474,10 +489,7 @@ function internalOracleLookupTable(tableName) {
     let oracleName = tableName.toLowerCase();
     const oracle = oracles.map[oracleName];
     if (!oracle) {
-        let output = `Oracle \`${oracleName}\` not found. ` +
-            `${oracleNotFoundMsg}`;
-        if (helpOutput) output += `\n${helpOutput}`;
-        return output;
+        return `Oracle \`${oracleName}\` not found. ${oracleNotFoundMsg}`;
     }
     //TODO: Check for oracle.results
     let roll = d(oracle.d ? oracle.d : 100);
@@ -512,7 +524,8 @@ function internalOracleLookupTable(tableName) {
     default:
         console.error(`Oracle '${oracle.title}' has unsupported type '${oracle.type}'.`);
     }
-    if (output == "Roll twice") {
+
+    if (output == "**Roll twice**") {
         let result1 = internalOracleLookupTable(tableName);
         let result2 = internalOracleLookupTable(tableName);
 
@@ -520,7 +533,7 @@ function internalOracleLookupTable(tableName) {
             result2 = internalOracleLookupTable(tableName);
         }
 
-        output = result1 + " and " + result2 + " ";
+        output = `${result1} and ${result2}`;
     }
     return output;
 }
@@ -538,7 +551,7 @@ function is_trackProgress(msg, cmdKey, args) {
     }
 
     const comment = args.length > 1 ? args.slice(1).join(' ').replace('\n') : 'Unnamed Tracker';
-    let result = '```Tracking Progress (' + rank + '):\n' + comment + '\n[··········] Current Progress: 0/10```';
+    let result = '```' + comment + '\n[··········] Current Value: 0/10 (' + rank + ')```';
     msg.channel.send(result)
     .then(function(message) {
         var data = msg.channel.id + ',' + message.id + '\r\n';
@@ -548,10 +561,11 @@ function is_trackProgress(msg, cmdKey, args) {
                 if (err) throw err;
         }); 
 
-        message.react("◀️") //React in order
+        message.react("◀️")
         .then(() => message.react("▶️"))
         .then(() => message.react("#️⃣"))
         .then(() => message.react("🎲"))
+        //.then(() => message.react("🚫"))
     })
     .catch(() => console.error('One of the emojis failed to react.'));
 }
@@ -575,31 +589,89 @@ client.on('messageReactionAdd', async (reaction, user) => {
         reaction.remove(user.id).catch(console.error);
     }
     else if (reaction.emoji.name == '🎲') {
-        const challenge = d(10, 2);
-
-        let amount = calculateTicks(reaction, 0, false);
-        let fullMarks = Math.floor(amount / 4);
-        
-        const challengeStr = challenge.map(n => (fullMarks) > n ? `__${n}__` : n);
-
-        let result = `Progress Roll\n**${fullMarks}**`;
-        result += ` vs. **${challengeStr[0]}** & **${challengeStr[1]}**`;
-
-        let success = 0;
-        for (let i = 0; i < challenge.length; i++) {
-            if (fullMarks > challenge[i]) {
-                success++;
-            }
-        }
-
-        const successStr = ['Miss...', 'Weak hit!', '_Strong hit!_'][success];
-        result += `\n${user} ${successStr}`;
-    
-        if (challenge[0] == challenge[1]) result += ' _MATCH!_';
+        rollProgress(reaction);
         reaction.remove(user.id).catch(console.error);
-        reaction.message.channel.send(result);
+    }
+    else if (reaction.emoji.name == '🆔') {
+        renameNPC(reaction);
+        reaction.remove(user.id).catch(console.error);    
+    }
+    else if (reaction.emoji.name == '🧝') {
+        renameNPC(reaction);
+        reaction.remove(user.id).catch(console.error);
+    }
+    else if (reaction.emoji.name == '🎭') {
+        addDescriptor(reaction);
+        reaction.remove(user.id).catch(console.error);
+    }
+    else if (reaction.emoji.name == '🎯') {
+        addGoal(reaction);
+        reaction.remove(user.id).catch(console.error);
+    }
+    else if (reaction.emoji.name == '💼') {
+        addRole(reaction);
+        reaction.remove(user.id).catch(console.error);
+    }
+    else if (reaction.emoji.name == '🚫') {
+        reaction.message.delete().catch(console.error);    
     }
 });
+
+function rollProgress(reaction) {
+    const challenge = d(10, 2);
+
+    let amount = calculateTicks(reaction, 0, false);
+    let fullMarks = Math.floor(amount / 4);
+    
+    const challengeStr = challenge.map(n => (fullMarks) > n ? `__${n}__` : n);
+
+    let result = `Progress Roll\n**${fullMarks}**`;
+    result += ` vs. **${challengeStr[0]}** & **${challengeStr[1]}**`;
+
+    let success = 0;
+    for (let i = 0; i < challenge.length; i++) {
+        if (fullMarks > challenge[i]) {
+            success++;
+        }
+    }
+
+    const successStr = ['Miss...', 'Weak hit!', '_Strong hit!_'][success];
+    result += `\n${user} ${successStr}`;
+
+    if (challenge[0] == challenge[1]) result += ' _MATCH!_';
+    reaction.message.channel.send(result);
+}
+
+function renameNPC(reaction) {
+    let tableName = "";
+    if (reaction.emoji.name == '🆔') tableName = "ironlander-names";
+    if (reaction.emoji.name == '🧝') tableName = "elf-names";
+    let newName = internalOracleLookupTable(tableName);
+    let oldNameRegex = /(?<=named )([^.\r\n])*./;
+    let newMessage = reaction.message.content.replace(oldNameRegex, `**${newName}**.`);
+    reaction.message.edit(newMessage);
+}
+
+function addRole(reaction) {
+    let newRole = internalOracleLookupTable("npc-role");
+    let roleRegex = /(?<=The NPC is a ).*(?= named)/;
+    let oldRole = reaction.message.content.match(roleRegex);
+    reaction.message.edit(reaction.message.content.replace(oldRole, `${oldRole} and a ${newRole}`));
+}
+
+function addGoal(reaction) {
+    let newGoal = internalOracleLookupTable("goals");
+    let goalRegex = /(?<=want to ).*(?=\.)/;
+    let oldGoalText = reaction.message.content.match(goalRegex);
+    reaction.message.edit(reaction.message.content.replace(oldGoalText, `${oldGoalText} and ${newGoal}`));
+}
+
+function addDescriptor(reaction) {
+    let newDesc = internalOracleLookupTable("npc-descriptors");
+    let descRegex = /(?<=They are ).*(?=and want to)/;
+    let oldDescText = reaction.message.content.match(descRegex);
+    reaction.message.edit(reaction.message.content.replace(oldDescText, `${oldDescText}and ${newDesc} `));
+}
 
 const noTick = '·';
 const singleTick = '-';
@@ -698,6 +770,7 @@ client.on('ready', () => {
             crlfDelay: Infinity
         });
 
+        let counter = 0;
         for await (const line of rl) {            
             let input = line.split(',');
             if (input.length < 2) return;
@@ -705,15 +778,30 @@ client.on('ready', () => {
             let channelId = input[0];
             let messageId = input[1];
 
-            let channel = client.channels.get(channelId);
-            channel.fetchMessages(messageId);
-	        console.log(`Fetched message ${messageId}`);
+            let breakHere;
+            if (messageId == "709848164483465277") 
+                breakHere = true;
+
+            if (!client.channels.exists("id", channelId)) continue;
+
+            try {
+                let channel = client.channels.get(channelId);
+                channel.fetchMessage(messageId);
+                counter++;
+            } catch (error) {
+                console.error(error.message);
+            }
         }
+        console.log(`Fetched ${counter} messages.`);
+        return;
     }
 
-    processLineByLine();
-
+    var lineByLine = processLineByLine();
+    lineByLine.then(console.log('Ready.'));
 });
+
+process.on('unhandledRejection', (console.error));
+
 
 function aw_rollMoveDice(msg, cmdKey, args) {
     const chan = msg.channel;

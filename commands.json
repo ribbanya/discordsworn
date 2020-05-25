@@ -38,13 +38,13 @@
     "is_createNPC": {
         "title": "Ironsworn Create NPC",
         "description": "Creates a NPC from the oracle tables",
-        "helpText": "**__Ironsworn Create NPC__**\nCreates a NPC form the oracle tables.",
+        "helpText": "**__Ironsworn Create NPC__**\nCreates a NPC form the oracle tables.\nThe format is 'The NPC is a `role` named `name`. They are `descriptor` and want to `goal`.\n\n__Reactions__\n:briefcase: Adds an additional NPC role.\n:dart: Adds and additional NPC goal.\n:performing_art: Adds and additional NPC descriptor.\n:id: Gives the NPC a new Ironlander name.\n:elf: Gives the NPC a new elf name.",
         "aliases": ["ironsworn-create-npc", "cnpc", "new"]
     },
     "is_trackProgress": {
         "title": "Ironsworn Progress Tracker",
         "description": "Creates a post that allows players to track progress through reactions",
-        "helpText": "**__Ironsworn Progress Tracker__**\nCreates a post that allows players to track progress through reactions.\n\n__Creating a progress tracker__\nTo create a progress tracker, start with the `progress` command then the difficulty of the task. Then, optionally, add a description:\n```.progress formidable Find the source of corruption in the dark forest.```\nThe possible difficulties are `troublesome`, `dangerous`, `formidable`, `extreme`, and `epic`.\n\n__Reactions__\n:arrow_backward: Decreases the current progress based on the difficulty.\n:arrow_forward: Increases the current progress based on the difficulty.\n:hash: Adds one complete hash to the current progress.\n:game_die: Rolls challenge die and reports the result to the chat window.",
+        "helpText": "**__Ironsworn Progress Tracker__**\nCreates a post that allows players to track progress through reactions.\n\n__Creating a progress tracker__\nTo create a progress tracker, start with the `progress` command then the difficulty of the task. Then, optionally, add a description:\n```.progress formidable Find the source of corruption in the dark forest.```\nThe possible difficulties are `troublesome`, `dangerous`, `formidable`, `extreme`, and `epic`.\n\n__Reactions__\n:arrow_backward: Decreases the current progress based on the difficulty.\n:arrow_forward: Increases the current progress based on the difficulty.\n:hash: Adds one complete hash to the current progress.\n:game_die: Rolls challenge die and reports the result to the chat window.\n\nAdd a :no_entry_sign: reaction to have the bot delete the tracker.",
         "aliases": ["ironsworn-progress-tracker", "pt", "progress"]
     },
     "aw_rollMoveDice": {
