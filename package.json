@@ -22,7 +22,7 @@
     "dependencies": {
         "dateformat": "^3.0.3",
         "discord.io": "^2.5.3",
-        "discord.js": "^12.2.0",
+        "discord.js": "^12.3.1",
         "eslint": "^5.2.0",
         "winston": "^3.2.1"
     },

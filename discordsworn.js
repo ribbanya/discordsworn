@@ -1,4 +1,4 @@
-const discord = require('discord.js');
+﻿const discord = require('discord.js');
 const fs = require('fs');
 const ws = require('ws');
 const dateFormat = require('dateformat');
@@ -20,6 +20,7 @@ const supportedCommands = [
     is_askTheOracle, is_rollActionDice,
     is_createNPC,
     is_trackProgress,
+    sf_prompt,
     aw_rollMoveDice,
     helpMessage,
     reconnectDiscordClient, exitProcess
@@ -31,6 +32,7 @@ const supportedCommands = [
 const supportedArgs = {
     [is_askTheOracle.name]: [
         is_oracleLookupTable.name,
+        sf_prompt.name,
         '0', '10', '25', '50', '75', '90', '100'
     ]
 };
@@ -309,6 +311,10 @@ function is_askTheOracle(msg, cmdKey, args) {
         is_oracleLookupTable(msg, cmdKey, args.slice(1), args[0]);
         return;
     }
+    if (matchArg(is_askTheOracle, args[0], sf_prompt)) {
+        sf_prompt(msg, cmdKey, args.slice(1), args[0]);
+        return;
+    }
 
     let likelihood = args[0].toLowerCase();
     const odds = argJumps[likelihood] || Number(likelihood);
@@ -536,6 +542,33 @@ function internalOracleLookupTable(tableName) {
         output = `${result1} and ${result2}`;
     }
     return output;
+}
+
+function sf_prompt(msg, cmdKey, args, tableAlias) {
+    const invalidArgsMsg = 'Please use a prompt name\n`Action`,`Theme`,`a/t`, `Descriptor`,`Focus`,`d/f`';
+    
+    if (args.length < 1) {
+        msg.channel.send(invalidArgsMsg);
+        return;
+    }
+
+    let promptName = args[0].toLowerCase();
+    const actionTheme = ["action", "theme", "a/t", "action/theme"];
+    const descriptorFocus = ["descriptor", "focus", "d/f", "descriptor/focus"];
+    if (actionTheme.includes(promptName)) {
+        let action = internalOracleLookupTable("sfa");
+        let theme = internalOracleLookupTable("sft");
+        msg.channel.send(`Your Prompt is: ${action}/${theme}`);
+        return;
+    }
+    if (descriptorFocus.includes(promptName)) {
+        let descriptor = internalOracleLookupTable("sfd");
+        let focus = internalOracleLookupTable("sff");
+        msg.channel.send(`Your Prompt is: ${descriptor}/${focus}`);
+        return;
+    }
+
+    msg.channel.send(invalidArgsMsg);
 }
 
 function is_trackProgress(msg, cmdKey, args) {
