@@ -1,4 +1,4 @@
-﻿const discord = require('discord.js');
+const discord = require('discord.js');
 const fs = require('fs');
 const ws = require('ws');
 const dateFormat = require('dateformat');
@@ -777,10 +777,6 @@ client.on('ready', () => {
 
             let channelId = input[0];
             let messageId = input[1];
-
-            let breakHere;
-            if (messageId == "709848164483465277") 
-                breakHere = true;
 
             if (!client.channels.cache.some(channel => channel.id === channelId)) continue;
 
